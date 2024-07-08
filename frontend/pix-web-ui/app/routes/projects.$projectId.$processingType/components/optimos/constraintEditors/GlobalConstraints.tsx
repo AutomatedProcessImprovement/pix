@@ -67,7 +67,6 @@ const GlobalConstraints = (props: GlobalConstraintsProps) => {
                     <MenuItem value={"HC-STRICT"}>HC-STRICT | Hill Climb strict</MenuItem>
                     <MenuItem value={"HC-FLEX"}>HC-FLEX | Hill Climb flex</MenuItem>
                     <MenuItem value={"TS"}>TS | Tabu search </MenuItem>
-                    <MenuItem value={"ALL"}>ALL | All algorithms </MenuItem>
                   </Select>
                 </>
               )}
@@ -133,7 +132,6 @@ const GlobalConstraints = (props: GlobalConstraintsProps) => {
                     <MenuItem value={"CO"}>CO | CA/AR combined </MenuItem>
                     <MenuItem value={"CAAR"}>CAAR | First CA then AR </MenuItem>
                     <MenuItem value={"ARCA"}>ARCA | First AR then CA </MenuItem>
-                    <MenuItem value={"ALL"}>ALL | All approaches </MenuItem>
                   </Select>
                 </>
               )}
