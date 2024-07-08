@@ -22,6 +22,7 @@ export enum AssetType {
   SIMOD_CONFIGURATION = "simod_configuration",
   OPTIMOS_CONFIGURATION = "optimos_configuration",
   OPTIMOS_REPORT = "optimos_report",
+  ZIP_FILE = "zip_file",
 }
 
 export function assetTypeToString(type: AssetType): string {
@@ -38,6 +39,8 @@ export function assetTypeToString(type: AssetType): string {
       return "Optimos Configuration";
     case AssetType.OPTIMOS_REPORT:
       return "Optimos Report";
+    case AssetType.ZIP_FILE:
+      return "Zip File";
     default:
       throw new Error(`Unknown asset type ${type}`);
   }

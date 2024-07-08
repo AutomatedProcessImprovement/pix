@@ -2,16 +2,23 @@ import { Transition } from "@headlessui/react";
 import { DocumentArrowUpIcon } from "@heroicons/react/24/outline";
 import { ArrowDownIcon } from "@heroicons/react/24/solid";
 import { useFetcher } from "@remix-run/react";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import EventLogColumnMappingDialog from "~/components/asset-upload/EventLogColumnMappingDialog";
 import { EventLogColumnMapping } from "~/components/asset-upload/column_mapping";
-import { AssetType, assetTypeToString } from "~/services/assets";
+import { AssetType, assetTypeToString, createAsset } from "~/services/assets";
+import { unpackAndMatchZip } from "./zip_helper";
+import { FileType, uploadFile } from "~/services/files";
+import { UserContext } from "~/routes/contexts";
+import { ProjectContext } from "~/routes/projects.$projectId/contexts";
 
 export function DragAndDropForm({ assetType, close }: { assetType: AssetType; close: () => void }) {
   // DragAndDrop component is used to upload files to the server. It keeps track of three different asset types:
   // Event Log, Process Model, Simulation Model. All asset types have a corresponding drag and drop area and a hidden
   // input element to store the actual file. The Simulation Model consists of two assets, thus, it has two drag and drop
   // areas and two hidden input elements to store the Process Model and Simulation Model files.
+
+  const user = useContext(UserContext);
+  const project = useContext(ProjectContext);
 
   const fetcher = useFetcher();
 
@@ -43,6 +50,11 @@ export function DragAndDropForm({ assetType, close }: { assetType: AssetType; cl
     EventLogColumnMapping.default()
   );
 
+  // Zip File, containing multiple files
+  const [zipFile, setZipFile] = useState<any>(null);
+  const [zipDragActive, setZipDragActive] = useState<boolean>(false);
+  const zipInputRef = useRef<any>(null);
+
   // Submit button enabled state and effects
   const [submitEnabled, setSubmitEnabled] = useState<boolean>(false);
   useEffect(() => {
@@ -68,6 +80,9 @@ export function DragAndDropForm({ assetType, close }: { assetType: AssetType; cl
       case AssetType.OPTIMOS_CONFIGURATION:
         setSubmitEnabled(!!optimosConfigurationFile);
         break;
+      case AssetType.ZIP_FILE:
+        setSubmitEnabled(!!zipFile);
+        break;
     }
   }, [
     assetType,
@@ -79,6 +94,7 @@ export function DragAndDropForm({ assetType, close }: { assetType: AssetType; cl
     eventLogColumnMappingFilledIn,
     fetcher.state,
     close,
+    zipFile,
   ]);
 
   // Close dialog on successful upload
@@ -99,6 +115,8 @@ export function DragAndDropForm({ assetType, close }: { assetType: AssetType; cl
         return [".json"].join(", ");
       case AssetType.SIMOD_CONFIGURATION:
         return [".yaml", ".yml"].join(", ");
+      case AssetType.ZIP_FILE:
+        return [".zip"].join(", ");
     }
   }
 
@@ -125,6 +143,9 @@ export function DragAndDropForm({ assetType, close }: { assetType: AssetType; cl
         break;
       case AssetType.OPTIMOS_CONFIGURATION:
         setOptimosConfigurationFile(file);
+        break;
+      case AssetType.ZIP_FILE:
+        setZipFile(file);
         break;
     }
   }
@@ -153,6 +174,10 @@ export function DragAndDropForm({ assetType, close }: { assetType: AssetType; cl
       case AssetType.OPTIMOS_CONFIGURATION:
         fileExists = !!optimosConfigurationFile;
         setOptimosConfigurationDragActive(dragActive);
+        break;
+      case AssetType.ZIP_FILE:
+        fileExists = !!zipFile;
+        setZipDragActive(dragActive);
         break;
     }
 
@@ -187,6 +212,10 @@ export function DragAndDropForm({ assetType, close }: { assetType: AssetType; cl
           setOptimosConfigurationFile(file);
           optimosConfigurationInputRef.current.files = e.dataTransfer.files;
           break;
+        case AssetType.ZIP_FILE:
+          setZipFile(file);
+          zipInputRef.current.files = e.dataTransfer.files;
+          break;
       }
     }
   }
@@ -213,6 +242,10 @@ export function DragAndDropForm({ assetType, close }: { assetType: AssetType; cl
         setOptimosConfigurationFile(null);
         optimosConfigurationInputRef.current.value = "";
         break;
+      case AssetType.ZIP_FILE:
+        setZipFile(null);
+        zipInputRef.current.value = "";
+        break;
     }
   }
 
@@ -237,6 +270,10 @@ export function DragAndDropForm({ assetType, close }: { assetType: AssetType; cl
       case AssetType.OPTIMOS_CONFIGURATION:
         optimosConfigurationInputRef.current.value = "";
         optimosConfigurationInputRef.current.click();
+        break;
+      case AssetType.ZIP_FILE:
+        zipInputRef.current.value = "";
+        zipInputRef.current.click();
         break;
     }
   }
@@ -296,6 +333,14 @@ export function DragAndDropForm({ assetType, close }: { assetType: AssetType; cl
           className="hidden"
           accept={getValidFileTypes(AssetType.OPTIMOS_CONFIGURATION)}
           onChange={(e: any) => onHiddenInputChange(e, AssetType.OPTIMOS_CONFIGURATION)}
+        />
+        <input
+          type="file"
+          name="zipFile"
+          ref={zipInputRef}
+          className="hidden"
+          accept={getValidFileTypes(AssetType.ZIP_FILE)}
+          onChange={(e: any) => onHiddenInputChange(e, AssetType.ZIP_FILE)}
         />
 
         {assetType === AssetType.EVENT_LOG && (
@@ -402,7 +447,7 @@ export function DragAndDropForm({ assetType, close }: { assetType: AssetType; cl
         )}
 
         {assetType === AssetType.OPTIMOS_CONFIGURATION && (
-          <div className="flex flex-wrap items-center justify-center">
+          <div className="flex flex-wrap items-center justify-center direction-column">
             {/* OPTIMOS Configuration */}
             <DragAndDropContainer
               className="m-4"
@@ -418,9 +463,95 @@ export function DragAndDropForm({ assetType, close }: { assetType: AssetType; cl
           </div>
         )}
 
-        <button className="w-48" type="submit" disabled={!submitEnabled}>
-          {fetcher.state === "submitting" ? "Uploading..." : "Upload"}
-        </button>
+        <div className="text-center m-4 max-w-prose">
+          Upload multiple files in a zip. All <code>.bpmn</code> files are assumed to be Process Models,{" "}
+          <code>.json</code> Files will be matched against the schema for process models or optimos constraints.
+        </div>
+        <DragAndDropContainer
+          className="m-4"
+          file={zipFile}
+          assetType={AssetType.ZIP_FILE}
+          dragActiveFlag={zipDragActive}
+          onDragEnter={(e) => onDragEnterOrLeaveOrOver(e, AssetType.ZIP_FILE, true)}
+          onDragLeave={(e) => onDragEnterOrLeaveOrOver(e, AssetType.ZIP_FILE, false)}
+          onDrop={(e) => onDragDrop(e, AssetType.ZIP_FILE)}
+          onSelectFile={() => openFileBrowser(AssetType.ZIP_FILE)}
+          onRemove={() => onRemoveClick(AssetType.ZIP_FILE)}
+        />
+
+        {!zipFile && (
+          <button className="w-48" type="submit" disabled={!submitEnabled}>
+            {fetcher.state === "submitting" ? "Uploading..." : "Upload"}
+          </button>
+        )}
+        {zipFile && (
+          <button
+            className="w-48"
+            onClick={async () => {
+              if (!user || !user.token || !project) return;
+              const { process_models, simulation_models, optimos_constraints, optimos_configurations, errors } =
+                await unpackAndMatchZip(zipFile.arrayBuffer());
+
+              if (process_models.length > 0 && simulation_models.length > 0) {
+                const [processModelFileName, processModelContent] = process_models[0];
+                const processModelFile = await uploadFile(
+                  new Blob([processModelContent]),
+                  processModelFileName,
+                  FileType.PROCESS_MODEL_BPMN,
+                  user.token
+                );
+
+                const [simulationModelFileName, simulationModelContent] = simulation_models[0];
+                const simulationModelFile = await uploadFile(
+                  new Blob([simulationModelContent]),
+                  simulationModelFileName,
+                  FileType.SIMULATION_MODEL_PROSIMOS_JSON,
+                  user.token
+                );
+
+                await createAsset(
+                  [processModelFile.id, simulationModelFile.id],
+                  processModelFileName,
+                  AssetType.SIMULATION_MODEL,
+                  project.id,
+                  user.token
+                );
+              }
+
+              if (optimos_constraints.length > 0) {
+                const optimosConfigFiles = [];
+                const [fileName, content] = optimos_constraints[0];
+                const file = await uploadFile(
+                  new Blob([content]),
+                  fileName,
+                  FileType.CONSTRAINTS_MODEL_OPTIMOS_JSON,
+                  user.token
+                );
+                optimosConfigFiles.push(file.id);
+                if (optimos_configurations.length > 0) {
+                  const [fileName, content] = optimos_configurations[0];
+                  const file = await uploadFile(
+                    new Blob([content]),
+                    fileName,
+                    FileType.CONFIGURATION_OPTIMOS_YAML,
+                    user.token
+                  );
+                  optimosConfigFiles.push(file.id);
+                }
+                await createAsset(
+                  optimosConfigFiles,
+                  fileName,
+                  AssetType.OPTIMOS_CONFIGURATION,
+                  project.id,
+                  user.token
+                );
+              }
+              close();
+            }}
+          >
+            Unpack Zip & Upload
+          </button>
+        )}
       </fetcher.Form>
     </div>
   );

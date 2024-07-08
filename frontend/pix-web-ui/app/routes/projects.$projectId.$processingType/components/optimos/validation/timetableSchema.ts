@@ -14,7 +14,7 @@ const distributionSchema = {
   distribution_params: yup.mixed().when("distribution_name", (distributionName: string | string[], _) => {
     const dtype = (Array.isArray(distributionName) ? distributionName[0] : distributionName) as DistributionType;
     if (!Object.keys(DistributionType).includes(dtype)) {
-      throw new Error(`Invalid distribution name: ${dtype}`);
+      return yup.mixed().test("type", "Invalid distribution type", () => false);
     }
 
     return yup
@@ -209,7 +209,7 @@ export const timetableSchema = yup.object({
               .min(1)
               .test("sum", "Case attributes values probabilities must sum to 1", testProbabilitiesSum);
           default:
-            throw new Error(`Invalid case attribute type: ${type}`);
+            return yup.mixed().test("type", "Invalid case attribute type", () => false);
         }
       }),
     })

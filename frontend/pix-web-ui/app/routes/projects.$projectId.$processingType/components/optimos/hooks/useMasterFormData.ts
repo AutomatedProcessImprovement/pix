@@ -6,7 +6,6 @@ import { AssetType } from "~/services/assets";
 import { FileType } from "~/services/files";
 import { useMemo } from "react";
 import { timetableSchema } from "../validation/timetableSchema";
-import type { ValidationError } from "yup";
 import { constraintsSchema } from "../validation/constraintsSchema";
 import { validateBPMN } from "../validation/validateBPMN";
 
