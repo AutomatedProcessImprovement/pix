@@ -41,8 +41,8 @@ export interface Solution {
 export interface SolutionInfo {
   pools_info: PoolsInfo;
   mean_process_cycle_time: number;
-  simulation_start_date: Date;
-  simulation_end_date: Date;
+  simulation_start_date: string;
+  simulation_end_date: string;
   simulation_time: number;
   deviation_info: DeviationInfo;
   pool_utilization: { [key: string]: number };

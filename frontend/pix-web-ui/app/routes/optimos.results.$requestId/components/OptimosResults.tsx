@@ -27,7 +27,7 @@ import type { ProcessingRequest } from "~/services/processing_requests";
 import { SolutionChart } from "./SolutionChart";
 import { useFileFromAsset } from "~/routes/projects.$projectId.$processingType/components/optimos/hooks/useFetchedAsset";
 import { AssetType, getAsset } from "~/services/assets";
-import { isMadDominated, isNonMadDominated } from "~/shared/pareto_helper";
+import { checkFront, FRONT_STATUS, isMadDominated, isNonMadDominated } from "~/shared/pareto_helper";
 import JSZip from "jszip";
 
 interface SimulationResultsProps {
@@ -139,7 +139,7 @@ const OptimizationResults = (props: SimulationResultsProps) => {
 
   const solutions_by_pareto_front = React.useMemo(() => {
     const isMad = algorithm === "HC-FLEX";
-    if (!report || (!report?.final_solutions && !report.current_solution)) return [];
+    if (!report || (!report?.final_solutions && !report.current_solution) || !algorithm) return [];
     if (!report?.final_solutions && report.current_solution) return [[report!.current_solution]];
     const pareto_fronts: Solution[][] = [];
 
@@ -149,20 +149,21 @@ const OptimizationResults = (props: SimulationResultsProps) => {
         continue;
       }
       const last_front = pareto_fronts[pareto_fronts.length - 1];
+      const front_status = checkFront(solution, last_front, isMad);
 
-      if (last_front.some((front_solution) => isNonMadDominated(solution, front_solution))) {
+      if (front_status === FRONT_STATUS.IN_FRONT) {
         last_front.push(solution);
-      } else {
+      } else if (front_status === FRONT_STATUS.DOMINATES_FRONT) {
         pareto_fronts.push([solution]);
       }
     }
     return pareto_fronts;
   }, [algorithm, report]);
+  if (!report || !algorithm) return <div>Loading...</div>;
 
   const final_pareto_front = solutions_by_pareto_front[solutions_by_pareto_front.length - 1];
   const all_but_last_pareto_front = solutions_by_pareto_front.slice(0, solutions_by_pareto_front.length - 1).reverse();
 
-  if (!report) return <div>Loading...</div>;
   const final_metrics = report.final_solution_metrics?.[0];
   const initial_solution = report.initial_solution;
 

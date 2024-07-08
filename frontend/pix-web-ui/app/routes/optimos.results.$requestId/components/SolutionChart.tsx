@@ -75,18 +75,19 @@ export const SolutionChart: FC<SolutionChartProps> = ({ solutions, initialSoluti
         })),
         type: "scatter",
       },
-      {
-        name: "Initial Solution",
-        data: [
-          {
-            x: initialSolution?.solution_info.mean_process_cycle_time,
-            y: initialSolution?.solution_info.total_pool_cost,
-            id: `execution_${0}`,
-          },
-        ],
-        color: "red",
-        type: "scatter",
-      },
+      // {
+      //   name: "Initial Solution",
+      //   data: [
+      //     {
+      //       x: initialSolution?.solution_info.mean_process_cycle_time,
+      //       y: initialSolution?.solution_info.total_pool_cost,
+      //       id: `execution_${0}`,
+      //       name: `${initialSolution?.name.replaceAll("_", " ")} #${initialSolution?.iteration}`,
+      //     },
+      //   ],
+      //   color: "red",
+      //   type: "scatter",
+      // },
       // {
       //   name: "Average Solution",
       //   data: [
