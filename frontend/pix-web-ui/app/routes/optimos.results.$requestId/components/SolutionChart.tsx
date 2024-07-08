@@ -4,6 +4,7 @@ import { HighchartsReact } from "highcharts-react-official";
 import type { Solution } from "~/shared/optimos_json_type";
 import { Grid } from "@mui/material";
 import { formatCurrency, formatHours, formatSeconds } from "~/shared/num_helper";
+import { useNavigate } from "@remix-run/react";
 
 interface SolutionChartProps {
   solutions: Solution[];
@@ -13,6 +14,7 @@ interface SolutionChartProps {
 }
 
 export const SolutionChart: FC<SolutionChartProps> = ({ solutions, initialSolution, averageCost, averageTime }) => {
+  const navigate = useNavigate();
   const options: Highcharts.Options = {
     chart: {
       type: "scatter",
@@ -58,7 +60,7 @@ export const SolutionChart: FC<SolutionChartProps> = ({ solutions, initialSoluti
           events: {
             click: function () {
               // Navigate to specific execution via anchor link
-              window.location.href = `#solution_${this.index}`;
+              navigate(`#solution_${this.index}`);
             },
           },
         },
