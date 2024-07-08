@@ -1,5 +1,8 @@
-import { useEffect, useState } from "react";
+import { useAsyncValue } from "@remix-run/react";
+import { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { UserContext } from "~/routes/contexts";
+import { useInputAssets } from "~/routes/projects.$projectId/hooks/useInputAssets";
 import type { Project } from "~/services/projects";
 
 export default function ProjectCard({ project }: { project: Project }) {
@@ -7,6 +10,9 @@ export default function ProjectCard({ project }: { project: Project }) {
   useEffect(() => {
     setCreationTime(parseDate(project.creation_time));
   }, [project]);
+
+  const user = useContext(UserContext);
+  const [isLoading, assets] = useInputAssets(project.id, user!.token);
 
   return (
     <Link
@@ -20,12 +26,12 @@ export default function ProjectCard({ project }: { project: Project }) {
         </div>
         <div className="font-normal text-slate-600 text-md">
           <div className="flex space-x-4">
-            <p className="font-semibold w-2">{project.assets_ids.length}</p>
-            <p>Assets</p>
-          </div>
-          <div className="flex space-x-4">
-            <p className="font-semibold w-2">{project.processing_requests_ids.length}</p>
-            <p>Processing requests</p>
+            {isLoading ? (
+              <p className="font-semibold w-2">...</p>
+            ) : (
+              <p className="font-semibold w-2">{assets.length}</p>
+            )}
+            <p>Models</p>
           </div>
         </div>
       </div>
