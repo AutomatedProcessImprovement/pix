@@ -66,7 +66,6 @@ const GlobalConstraints = (props: GlobalConstraintsProps) => {
                   >
                     <MenuItem value={"HC-STRICT"}>HC-STRICT | Hill Climb strict</MenuItem>
                     <MenuItem value={"HC-FLEX"}>HC-FLEX | Hill Climb flex</MenuItem>
-                    <MenuItem value={"TS"}>TS | Tabu search </MenuItem>
                   </Select>
                 </>
               )}
