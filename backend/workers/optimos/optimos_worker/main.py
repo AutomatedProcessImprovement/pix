@@ -19,13 +19,13 @@ logger = logging.getLogger()
 
 open_telemetry_utils.instrument_worker(service_name="optimos", httpx=True)
 
-consumer_id = "optimos-consumer"  # -{uuid.uuid4()}"
+consumer_id = f"optimos-consumer-{uuid.uuid4()}"
 # group_id should be the same for all parallel consumers that process the same topic
 group_id = settings.kafka_consumer_group_id
 
 consumer = KafkaConsumer(
     settings.kafka_topic_requests,
-    # settings.kafka_topic_cancellations,
+    settings.kafka_topic_cancellations,
     client_id=consumer_id,
     group_id=group_id,
     bootstrap_servers=settings.kafka_bootstrap_servers,
@@ -34,8 +34,8 @@ consumer = KafkaConsumer(
     # session_timeout_ms=30 * 60 * 1000,
     # request_timeout_ms=40 * 60 * 1000,
     # connections_max_idle_ms=50 * 60 * 1000,
-    # max_poll_records=1,
-    # max_poll_interval_ms=60 * 1000,
+    max_poll_records=1,
+    # max_poll_interval_ms=30 * 60 * 1000,
 )
 
 logger.info(
