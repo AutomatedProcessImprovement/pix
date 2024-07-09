@@ -154,7 +154,14 @@ const OptimizationResults = (props: SimulationResultsProps) => {
     }
     return pareto_fronts;
   }, [algorithm, report]);
-  if (!report || !algorithm) return <div>Loading...</div>;
+  if (!report || !algorithm)
+    return (
+      <Grid container justifyContent="center" alignItems="center" height="100vh" flexDirection={"column"} flex>
+        <CircularProgress size={50} />
+        <br></br>
+        <Typography variant="h6">Loading...</Typography>
+      </Grid>
+    );
 
   const final_pareto_front = solutions_by_pareto_front[solutions_by_pareto_front.length - 1];
   const all_but_last_pareto_front = solutions_by_pareto_front.slice(0, solutions_by_pareto_front.length - 1).reverse();
