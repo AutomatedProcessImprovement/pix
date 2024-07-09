@@ -19,7 +19,7 @@ logger = logging.getLogger()
 
 open_telemetry_utils.instrument_worker(service_name="optimos", httpx=True)
 
-consumer_id = f"optimos-consumer-{uuid.uuid4()}"
+consumer_id = "optimos-consumer"  # -{uuid.uuid4()}"
 # group_id should be the same for all parallel consumers that process the same topic
 group_id = settings.kafka_consumer_group_id
 
