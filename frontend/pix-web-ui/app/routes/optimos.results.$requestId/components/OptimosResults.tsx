@@ -10,25 +10,26 @@ import {
   AccordionDetails,
   AccordionSummary,
 } from "@mui/material";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import YAML, { isMap } from "yaml";
 import * as React from "react";
 import "moment-duration-format";
 import type { FullOutputJson, ScenarioProperties, Solution } from "~/shared/optimos_json_type";
 import { formatCurrency, formatPercentage, formatSeconds } from "~/shared/num_helper";
-import { CloudDownload as CloudDownloadIcon } from "@mui/icons-material";
+import { CloudDownload as CloudDownloadIcon, Cancel as CancelIcon } from "@mui/icons-material";
 import { WeekView } from "~/components/optimos/WeekView";
 import { OptimosSolution } from "./OptimosSolution";
 import { InitialSolutionContext } from "./InitialSolutionContext";
 import { useAutoRefreshRequest } from "~/routes/projects.$projectId.$processingType/hooks/useAutoRefreshRequest";
 import { FileType, getFile, getFileContent } from "~/services/files";
 import { UserContext } from "~/routes/contexts";
-import type { ProcessingRequest } from "~/services/processing_requests";
+import { cancelProcessingRequest, type ProcessingRequest } from "~/services/processing_requests";
 import { SolutionChart } from "./SolutionChart";
 import { useFileFromAsset } from "~/routes/projects.$projectId.$processingType/components/optimos/hooks/useFetchedAsset";
 import { AssetType, getAsset } from "~/services/assets";
 import { checkFront, FRONT_STATUS, isMadDominated, isNonMadDominated } from "~/shared/pareto_helper";
 import JSZip from "jszip";
+import toast from "react-hot-toast";
 
 interface SimulationResultsProps {
   report: FullOutputJson;
@@ -120,22 +121,16 @@ const OptimizationResults = (props: SimulationResultsProps) => {
     setFileDownloadUrl(fileDownloadUrl);
   };
 
-  const writeName = (item: any) => {
-    switch (item.name) {
-      case "HC_FLEX_CO":
-        return "Hill climb FLEX - Combined";
-      case "HC_FLEX_O_C":
-        return "Hill climb FLEX - Only calendar";
-      case "HC_FLEX_O_A_R":
-        return "Hill climb FLEX - Only add/remove";
-      case "HC_FLEX_F_CA_T_A_R":
-        return "Hill climb FLEX - First calendar, then add/remove";
-      case "HC_FLEX_F_A_R_T_CA":
-        return "Hill climb FLEX - First add/remove, then calendar";
-      default:
-        return "Unknown";
+  const onCancel = useCallback(async () => {
+    if (!request) return;
+    try {
+      await cancelProcessingRequest(request.id, user!.token!);
+      toast.success("Request cancelled (this may take a moment)");
+    } catch (e) {
+      toast.error("Failed to cancel the request");
+      return;
     }
-  };
+  }, [request, user]);
 
   const solutions_by_pareto_front = React.useMemo(() => {
     const isMad = algorithm === "HC-FLEX";
@@ -193,16 +188,29 @@ const OptimizationResults = (props: SimulationResultsProps) => {
                     </Typography>
                   </Grid>
                   <Grid item xs={4} justifyContent="flexEnd" textAlign={"right"}>
-                    <Button
-                      type="button"
-                      variant="contained"
-                      onClick={(_e) => {
-                        onDownload();
-                      }}
-                      startIcon={<CloudDownloadIcon />}
-                    >
-                      Report
-                    </Button>
+                    <ButtonGroup>
+                      {!report.final_solutions && !!report.current_solution && (
+                        <Button
+                          type="button"
+                          variant="outlined"
+                          color="error"
+                          onClick={onCancel}
+                          startIcon={<CancelIcon />}
+                        >
+                          Cancel
+                        </Button>
+                      )}
+                      <Button
+                        type="button"
+                        variant="contained"
+                        onClick={(_e) => {
+                          onDownload();
+                        }}
+                        startIcon={<CloudDownloadIcon />}
+                      >
+                        Report
+                      </Button>
+                    </ButtonGroup>
                     <a
                       style={{ display: "none" }}
                       download={"report.json"}
