@@ -87,12 +87,14 @@ export const OptimosSolution: FC<OptimosSolutionProps> = memo(({ finalMetrics, s
         (pool) => !Object.keys(info.pools_info.pools).includes(pool.id)
       );
 
+  const isInitialSolution = initialSolution?.iteration === solution.iteration;
+
   return (
     <Paper elevation={5} sx={{ m: 3, p: 3, minHeight: "10vw" }}>
       <Grid container alignItems={"center"} justifyContent={"center"} height={"4em"}>
         <Grid item xs={8}>
           <Typography variant="h6" align="left" textTransform={"capitalize"}>
-            {solution.name.replaceAll("_", " ")} #{solution.iteration}
+            {solution.name.replaceAll("_", " ")} #{solution.iteration} {isInitialSolution ? "(Initial Solution)" : ""}
           </Typography>
         </Grid>
         <Grid item xs={4}>
