@@ -25,7 +25,7 @@ group_id = settings.kafka_consumer_group_id
 
 consumer = KafkaConsumer(
     settings.kafka_topic_requests,
-    settings.kafka_topic_cancellations,
+    # settings.kafka_topic_cancellations,
     client_id=consumer_id,
     group_id=group_id,
     bootstrap_servers=settings.kafka_bootstrap_servers,
@@ -35,7 +35,7 @@ consumer = KafkaConsumer(
     # request_timeout_ms=40 * 60 * 1000,
     # connections_max_idle_ms=50 * 60 * 1000,
     # max_poll_records=1,
-    max_poll_interval_ms=60 * 1000,
+    # max_poll_interval_ms=60 * 1000,
 )
 
 logger.info(
