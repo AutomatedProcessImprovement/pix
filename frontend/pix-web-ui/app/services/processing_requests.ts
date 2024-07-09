@@ -63,3 +63,17 @@ export async function cancelProcessingRequest(id: string, token: string) {
   if (!response.ok) throw new Error(response.statusText);
   return true;
 }
+
+export async function deleteProcessingRequest(id: string, token: string) {
+  const url = `processing-requests/${id}`;
+  const u = new URL(url, window.ENV.BACKEND_BASE_URL_PUBLIC);
+  const response = await fetch(u, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Origin: window.location.origin,
+    },
+  });
+  if (!response.ok) throw new Error(response.statusText);
+  return true;
+}

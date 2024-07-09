@@ -77,7 +77,6 @@ async def get_processing_requests(
             if with_output_assets:
                 for processing_request in processing_requests:
                     if len(processing_request.output_assets_ids) > 0:
-
                         processing_request.output_assets = await asset_service.get_assets_by_ids(
                             processing_request.output_assets_ids
                         )
@@ -138,7 +137,7 @@ async def cancel_processing_request(
     Cancel a processing request for the authenticated user.
     """
     try:
-        await processing_request_service.create_cancellation_request(
+        await processing_request_service.delete_or_cancel_request(
             processing_request_id=processing_request_id, current_user=user.__dict__
         )
     except UserNotFound:

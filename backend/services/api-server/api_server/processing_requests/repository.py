@@ -151,6 +151,11 @@ class ProcessingRequestRepository:
         await self.session.commit()
         return processing_request
 
+    async def delete_processing_request(self, processing_request_id: UUID) -> None:
+        processing_request = await self.get_processing_request(processing_request_id)
+        await self.session.delete(processing_request)
+        await self.session.commit()
+
 
 async def get_processing_request_repository(
     session: AsyncSession = Depends(get_async_session),

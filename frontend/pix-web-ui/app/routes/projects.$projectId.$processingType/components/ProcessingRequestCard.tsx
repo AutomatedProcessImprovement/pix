@@ -7,12 +7,14 @@ import {
   ProcessingRequestType,
   type ProcessingRequest,
   cancelProcessingRequest,
+  deleteProcessingRequest,
 } from "~/services/processing_requests";
 import { parseDate } from "~/shared/utils";
 import { AssetCard } from "./AssetCard";
 import { useAutoRefreshRequest } from "../hooks/useAutoRefreshRequest";
-import { Button } from "@mui/material";
+import { Button, IconButton } from "@mui/material";
 import toast from "react-hot-toast";
+import { TrashIcon } from "@heroicons/react/20/solid";
 
 export function ProcessingRequestCard({ request: initialRequest }: { request: ProcessingRequest }) {
   // polling of running requests to update the status
@@ -79,23 +81,47 @@ export function ProcessingRequestCard({ request: initialRequest }: { request: Pr
     }
   }, [request_, user]);
 
+  const onDelete = useCallback(async () => {
+    if (!request_) return;
+    try {
+      await deleteProcessingRequest(request_.id, user!.token!);
+      toast.success("Request deleted");
+    } catch (e) {
+      toast.error("Failed to delete the request");
+      return;
+    }
+  }, [request_, user]);
+
   if (!request_) return <></>;
   return (
     <div
       className={`flex flex-col space-y-2 rounded-lg p-2 border-2 break-words tracking-normal text-sm text-slate-800 bg-slate-100`}
       data-processingrequestid={request_.id}
     >
-      <div>
-        <p>Job started at {creationDate}</p>
-        {formattedDuration() ? <p>Duration {formattedDuration()}</p> : <></>}
-        <p>
-          Status: <span className={`font-semibold ${textColorByStatus(request_.status)}`}>{request_.status}</span>
-        </p>
-        {request_.status === ProcessingRequestStatus.FAILED && request_.message && request_.message.length > 0 && (
-          <details className="break-all">
-            <summary className="cursor-pointer w-fit">Details</summary>
-            <p className="text-slate-500 text-xs leading-relaxed">{request_.message}</p>
-          </details>
+      <div className="flex flex-row ">
+        <div>
+          <p>Job started at {creationDate}</p>
+          {formattedDuration() ? <p>Duration {formattedDuration()}</p> : <></>}
+          <p>
+            Status: <span className={`font-semibold ${textColorByStatus(request_.status)}`}>{request_.status}</span>
+          </p>
+          {request_.status === ProcessingRequestStatus.FAILED && request_.message && request_.message.length > 0 && (
+            <details className="break-all">
+              <summary className="cursor-pointer w-fit">Details</summary>
+              <p className="text-slate-500 text-xs leading-relaxed">{request_.message}</p>
+            </details>
+          )}
+        </div>
+        {[ProcessingRequestStatus.FAILED, ProcessingRequestStatus.FINISHED].includes(request_.status) && (
+          <div className="flex items-start">
+            <div className={"py-1 px-0.5 pt-1.5 cursor-pointer"} onClick={onDelete}>
+              <div
+                className={`z-0 w-6 h-6 flex items-center place-content-center rounded-full text-slate-400 hover:text-red-500 border-2 border-slate-200 bg-white hover:bg-slate-100`}
+              >
+                <TrashIcon className="w-4 " />
+              </div>
+            </div>
+          </div>
         )}
       </div>
       {request_.type === ProcessingRequestType.WAITING_TIME_ANALYSIS_KRONOS &&

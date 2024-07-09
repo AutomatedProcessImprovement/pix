@@ -181,10 +181,13 @@ class ProcessingRequestService:
     async def get_processing_request(self, processing_request_id: uuid.UUID) -> ProcessingRequest:
         return await self._processing_request_repository.get_processing_request(processing_request_id)
 
-    async def create_cancellation_request(self, processing_request_id: uuid.UUID, current_user: dict):
+    async def delete_or_cancel_request(self, processing_request_id: uuid.UUID, current_user: dict):
         processing_request = await self._processing_request_repository.get_processing_request(processing_request_id)
         if not await self.does_user_have_access_to_project(current_user, processing_request.project_id):
             raise NotEnoughPermissions()
+
+        if processing_request.status in [ProcessingRequestStatus.FINISHED, ProcessingRequestStatus.FAILED]:
+            await self._processing_request_repository.delete_processing_request(processing_request_id)
 
         if processing_request.status in [ProcessingRequestStatus.FINISHED, ProcessingRequestStatus.FAILED]:
             raise Exception("Cannot cancel a finished or failed processing request")
