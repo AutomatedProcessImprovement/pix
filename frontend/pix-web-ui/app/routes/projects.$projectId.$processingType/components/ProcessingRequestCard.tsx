@@ -112,7 +112,9 @@ export function ProcessingRequestCard({ request: initialRequest }: { request: Pr
             </details>
           )}
         </div>
-        {[ProcessingRequestStatus.FAILED, ProcessingRequestStatus.FINISHED].includes(request_.status) && (
+        {[ProcessingRequestStatus.FAILED, ProcessingRequestStatus.FINISHED, ProcessingRequestStatus.CANCELLED].includes(
+          request_.status
+        ) && (
           <div className="flex items-start">
             <div className={"py-1 px-0.5 pt-1.5 cursor-pointer"} onClick={onDelete}>
               <div
