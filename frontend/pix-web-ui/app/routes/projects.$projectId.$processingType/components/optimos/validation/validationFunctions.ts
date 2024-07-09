@@ -32,10 +32,8 @@ export const createValidateNeverWorkMask =
 
 export const createValidateAlwaysWorkMask =
   (resourceIndex: number, day: (typeof DAYS)[number]) => (mask: number, masterForm: MasterFormData) => {
-    const never_work_masks = masterForm.constraints!.resources[resourceIndex].constraints.never_work_masks[day];
+    const never_work_masks = masterForm.constraints!.resources[resourceIndex].constraints.never_work_masks[day] ?? 0;
     const work_times = masterForm.simulationParameters!.resource_calendars[resourceIndex].time_periods;
-
-    if (!never_work_masks) return true;
 
     if ((mask & never_work_masks) !== 0) {
       return "There is a conflict with the never work hours.";
