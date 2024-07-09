@@ -34,8 +34,8 @@ consumer = KafkaConsumer(
     # session_timeout_ms=30 * 60 * 1000,
     # request_timeout_ms=40 * 60 * 1000,
     # connections_max_idle_ms=50 * 60 * 1000,
-    max_poll_records=1,
-    # max_poll_interval_ms=30 * 60 * 1000,
+    # max_poll_records=1,
+    max_poll_interval_ms=60 * 1000,
 )
 
 logger.info(
