@@ -28,7 +28,7 @@ export const useAutoRefreshRequest = (initialRequest?: ProcessingRequest) => {
 
     // set up polling for newly created or running processing requests
     const interval = setInterval(async () => {
-      console.log("Polling processing request", request.id);
+      console.log(`Polling processing request ${request.id} with status ${request.status}...`);
       // fetch the processing request
       let requestUpdated;
       try {

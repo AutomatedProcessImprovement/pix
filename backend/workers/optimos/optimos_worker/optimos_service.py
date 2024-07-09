@@ -58,8 +58,8 @@ logger = logging.getLogger()
 
 class OptimosService:
     def __init__(self):
-        self._assets_base_dir = settings.asset_base_dir
-        self._optimos_results_base_dir = settings.optimos_results_base_dir
+        self._assets_base_dir = settings.asset_base_dir / str(time.time())
+        self._optimos_results_base_dir = settings.optimos_results_base_dir / str(time.time())
         self._asset_service_client = AssetServiceClient()
         self._processing_request_service_client = ProcessingRequestServiceClient()
         self._project_service_client = ProjectServiceClient()
@@ -187,7 +187,8 @@ class OptimosService:
         logger.info(f"Algorithm: {algorithm}")
         logger.info(f"Approach: {approach}")
 
-        data_path = os.path.abspath("/var/tmp/optimos")
+        data_path = os.path.abspath(f"/var/tmp/optimos/{log_name}")
+        os.makedirs(data_path, exist_ok=True)
 
         model_path = os.path.abspath(os.path.join(data_path, model_filename))
         sim_param_path = os.path.abspath(os.path.join(data_path, sim_params_file))

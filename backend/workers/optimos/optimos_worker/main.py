@@ -45,7 +45,6 @@ logger.info(
     f"bootstrap_connected={consumer.bootstrap_connected()}"
 )
 
-optimos_service = OptimosService()
 
 # Initialize thread pool executor
 executor = ThreadPoolExecutor(max_workers=5)
@@ -85,12 +84,16 @@ async def process_message(message):
         task_id = request.processing_request_id
         try:
             running_requests[task_id] = request
-            executor.submit(asyncio.run, optimos_service.process(request))
+            executor.submit(asyncio.run, process_request(request))
 
             logger.info(f"Kafka consumer {consumer_id} finished processing the message: {message}")
         except Exception as e:
             logger.info(f"Kafka consumer {consumer_id} failed to process the message: {message} because of {e}")
             del running_requests[task_id]
+
+
+async def process_request(request: ProcessingRequest):
+    await OptimosService().process(request)
 
 
 async def main():
