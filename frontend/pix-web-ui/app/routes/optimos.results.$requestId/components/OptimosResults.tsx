@@ -307,47 +307,52 @@ const OptimizationResults = (props: SimulationResultsProps) => {
                   </Grid>
                 ))}
                 {!!all_but_last_pareto_front.length && (
-                  <Grid item id="non-optimal-solutions">
-                    <Typography variant="h5">Previous (non-optimal) solutions</Typography>
-                  </Grid>
-                )}
-                <Grid item xs={12} my={3}>
-                  <Accordion
-                    id="initial-solution-acc"
-                    key="initial-solution"
-                    slotProps={{ transition: { unmountOnExit: true } }}
-                  >
-                    <AccordionSummary>Initial Solution</AccordionSummary>
-                    <AccordionDetails>
-                      <OptimosSolution initialSolution={initial_solution} solution={initial_solution}></OptimosSolution>
-                    </AccordionDetails>
-                  </Accordion>
+                  <>
+                    <Grid item id="non-optimal-solutions">
+                      <Typography variant="h5">Previous (non-optimal) solutions</Typography>
+                    </Grid>
+                    <Grid item xs={12} my={3}>
+                      <Accordion
+                        id="initial-solution-acc"
+                        key="initial-solution"
+                        slotProps={{ transition: { unmountOnExit: true } }}
+                      >
+                        <AccordionSummary>Initial Solution</AccordionSummary>
+                        <AccordionDetails>
+                          <OptimosSolution
+                            initialSolution={initial_solution}
+                            solution={initial_solution}
+                          ></OptimosSolution>
+                        </AccordionDetails>
+                      </Accordion>
 
-                  {all_but_last_pareto_front_in_chunks_of_25.map((chunk, index) => (
-                    <Accordion
-                      key={`non-optimal-solution-chunk-${index}`}
-                      slotProps={{ transition: { unmountOnExit: true } }}
-                    >
-                      <AccordionSummary>
-                        Solutions {index * 50 + 1} - {index * 50 + chunk.length}
-                      </AccordionSummary>
-                      <AccordionDetails>
-                        <Grid container>
-                          {chunk.map((solution, index) => (
-                            <Grid item xs={12} key={`grid-${index}`} id={"solution_" + index}>
-                              <OptimosSolution
-                                key={index}
-                                solution={solution}
-                                finalMetrics={final_metrics}
-                                initialSolution={initial_solution}
-                              ></OptimosSolution>
+                      {all_but_last_pareto_front_in_chunks_of_25.map((chunk, index) => (
+                        <Accordion
+                          key={`non-optimal-solution-chunk-${index}`}
+                          slotProps={{ transition: { unmountOnExit: true } }}
+                        >
+                          <AccordionSummary>
+                            Solutions {index * 50 + 1} - {index * 50 + chunk.length}
+                          </AccordionSummary>
+                          <AccordionDetails>
+                            <Grid container>
+                              {chunk.map((solution, index) => (
+                                <Grid item xs={12} key={`grid-${index}`} id={"solution_" + index}>
+                                  <OptimosSolution
+                                    key={index}
+                                    solution={solution}
+                                    finalMetrics={final_metrics}
+                                    initialSolution={initial_solution}
+                                  ></OptimosSolution>
+                                </Grid>
+                              ))}
                             </Grid>
-                          ))}
-                        </Grid>
-                      </AccordionDetails>
-                    </Accordion>
-                  ))}
-                </Grid>
+                          </AccordionDetails>
+                        </Accordion>
+                      ))}
+                    </Grid>
+                  </>
+                )}
               </Grid>
             </Grid>
           </Grid>
