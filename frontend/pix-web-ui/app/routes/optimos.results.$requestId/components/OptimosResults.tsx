@@ -152,6 +152,16 @@ const OptimizationResults = (props: SimulationResultsProps) => {
     );
 
   const all_but_last_pareto_front = report?.final_solutions?.filter((sol) => !lastParetoFront.includes(sol)) ?? [];
+  const all_but_last_pareto_front_in_chunks_of_25 = all_but_last_pareto_front.reduce(
+    (acc, solution) => {
+      const current_chunk = acc[acc.length - 1];
+      if (current_chunk.length < 25) {
+        return [...acc.slice(0, -1), [...current_chunk, solution]];
+      }
+      return [...acc, [solution]];
+    },
+    [[]] as Solution[][]
+  );
 
   const final_metrics = report.final_solution_metrics?.[0];
   const initial_solution = report.initial_solution;
@@ -296,26 +306,35 @@ const OptimizationResults = (props: SimulationResultsProps) => {
                   </Grid>
                 ))}
                 {!!all_but_last_pareto_front.length && (
-                  <Grid item>
+                  <Grid item id="non-optimal-solutions">
                     <Typography variant="h5">Previous (non-optimal) solutions</Typography>
                   </Grid>
                 )}
                 <Grid item xs={12} my={3}>
-                  <Accordion key={"non-optimal-solutions"} slotProps={{ transition: { unmountOnExit: true } }}>
-                    <AccordionSummary>Non Optimal Solutions</AccordionSummary>
-                    <AccordionDetails>
-                      {all_but_last_pareto_front.map((solution, index) => (
-                        <Grid item xs={12} key={`grid-${index}`} id={"solution_" + index}>
-                          <OptimosSolution
-                            key={index}
-                            solution={solution}
-                            finalMetrics={final_metrics}
-                            initialSolution={initial_solution}
-                          ></OptimosSolution>
+                  {all_but_last_pareto_front_in_chunks_of_25.map((chunk, index) => (
+                    <Accordion
+                      key={`non-optimal-solution-chunk-${index}`}
+                      slotProps={{ transition: { unmountOnExit: true } }}
+                    >
+                      <AccordionSummary>
+                        Solutions {index * 50 + 1} - {index * 50 + chunk.length}
+                      </AccordionSummary>
+                      <AccordionDetails>
+                        <Grid container>
+                          {chunk.map((solution, index) => (
+                            <Grid item xs={12} key={`grid-${index}`} id={"solution_" + index}>
+                              <OptimosSolution
+                                key={index}
+                                solution={solution}
+                                finalMetrics={final_metrics}
+                                initialSolution={initial_solution}
+                              ></OptimosSolution>
+                            </Grid>
+                          ))}
                         </Grid>
-                      ))}
-                    </AccordionDetails>
-                  </Accordion>
+                      </AccordionDetails>
+                    </Accordion>
+                  ))}
                 </Grid>
               </Grid>
             </Grid>
