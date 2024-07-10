@@ -7,13 +7,20 @@ import { formatCurrency, formatHours, formatSeconds } from "~/shared/num_helper"
 import { useNavigate } from "@remix-run/react";
 
 interface SolutionChartProps {
-  solutions: Solution[];
+  optimalSolutions: Solution[];
+  otherSolutions: Solution[];
   initialSolution?: Solution;
   averageCost: number;
   averageTime: number;
 }
 
-export const SolutionChart: FC<SolutionChartProps> = ({ solutions, initialSolution, averageCost, averageTime }) => {
+export const SolutionChart: FC<SolutionChartProps> = ({
+  optimalSolutions,
+  otherSolutions,
+  initialSolution,
+  averageCost,
+  averageTime,
+}) => {
   const navigate = useNavigate();
   const options: Highcharts.Options = {
     chart: {
@@ -59,6 +66,7 @@ export const SolutionChart: FC<SolutionChartProps> = ({ solutions, initialSoluti
         point: {
           events: {
             click: function () {
+              console.log(this);
               // Navigate to specific execution via anchor link
               navigate(`#solution_${this.index}`);
             },
@@ -68,28 +76,39 @@ export const SolutionChart: FC<SolutionChartProps> = ({ solutions, initialSoluti
     },
     series: [
       {
-        name: "Solution",
-        data: solutions.map((solution, index) => ({
+        name: "Other Solutions",
+        data: otherSolutions.map((solution, index) => ({
+          x: solution.solution_info.mean_process_cycle_time,
+          y: solution.solution_info.total_pool_cost,
+          id: `execution_${optimalSolutions.length + index}`,
+          name: `Solution #${solution.iteration}`,
+        })),
+        color: "gray",
+        type: "scatter",
+      },
+      {
+        name: "Initial Solution",
+        data: [
+          {
+            x: initialSolution?.solution_info.mean_process_cycle_time,
+            y: initialSolution?.solution_info.total_pool_cost,
+            id: `execution_${0}`,
+            name: `${initialSolution?.name.replaceAll("_", " ")} #${initialSolution?.iteration}`,
+          },
+        ],
+        color: "red",
+        type: "scatter",
+      },
+      {
+        name: "Optimal Solution",
+        data: optimalSolutions.map((solution, index) => ({
           x: solution.solution_info.mean_process_cycle_time,
           y: solution.solution_info.total_pool_cost,
           id: `execution_${index}`,
-          name: `${solution.name.replaceAll("_", " ")} #${solution.iteration}`,
+          name: `Solution #${solution.iteration}`,
         })),
         type: "scatter",
       },
-      // {
-      //   name: "Initial Solution",
-      //   data: [
-      //     {
-      //       x: initialSolution?.solution_info.mean_process_cycle_time,
-      //       y: initialSolution?.solution_info.total_pool_cost,
-      //       id: `execution_${0}`,
-      //       name: `${initialSolution?.name.replaceAll("_", " ")} #${initialSolution?.iteration}`,
-      //     },
-      //   ],
-      //   color: "red",
-      //   type: "scatter",
-      // },
       // {
       //   name: "Average Solution",
       //   data: [

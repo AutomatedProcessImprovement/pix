@@ -94,7 +94,7 @@ export const OptimosSolution: FC<OptimosSolutionProps> = memo(({ finalMetrics, s
       <Grid container alignItems={"center"} justifyContent={"center"} height={"4em"}>
         <Grid item xs={8}>
           <Typography variant="h6" align="left" textTransform={"capitalize"}>
-            {solution.name.replaceAll("_", " ")} #{solution.iteration} {isInitialSolution ? "(Initial Solution)" : ""}
+            Solution #{solution.iteration} {isInitialSolution ? "(Initial Solution)" : ""}
           </Typography>
         </Grid>
         <Grid item xs={4}>

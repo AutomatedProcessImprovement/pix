@@ -44,15 +44,26 @@ export enum FRONT_STATUS {
   IN_FRONT = "IN_FRONT",
 }
 
-export const checkFront = (solution: Solution, front: Solution[], isMad = false) => {
-  let dominatesFront = true;
+export const addToFront = (solution: Solution, front: Solution[], isMad = false): Solution[] => {
+  const isDominated = isMad ? isMadDominated : isNonMadDominated;
+  let shouldAddNewSolution = true;
+  const newFront: Solution[] = [];
 
   for (const frontSolution of front) {
-    const dominated = isMad ? isMadDominated(solution, frontSolution) : isNonMadDominated(solution, frontSolution);
-    const dominates = isMad ? isMadDominated(frontSolution, solution) : isNonMadDominated(frontSolution, solution);
-
-    if (dominated) return FRONT_STATUS.DOMINATED_BY_FRONT;
-    if (!dominates) dominatesFront = false;
+    if (isDominated(frontSolution, solution)) {
+      // If the current solution is dominated by the new solution, skip it
+      continue;
+    }
+    if (isDominated(solution, frontSolution)) {
+      // If the new solution is dominated by any solution, it should not be added
+      shouldAddNewSolution = false;
+    }
+    newFront.push(frontSolution);
   }
-  return dominatesFront ? FRONT_STATUS.DOMINATES_FRONT : FRONT_STATUS.IN_FRONT;
+
+  if (shouldAddNewSolution) {
+    newFront.push(solution);
+  }
+
+  return newFront;
 };

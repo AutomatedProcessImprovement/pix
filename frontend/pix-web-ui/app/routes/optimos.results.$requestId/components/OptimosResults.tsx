@@ -27,7 +27,7 @@ import { cancelProcessingRequest, type ProcessingRequest } from "~/services/proc
 import { SolutionChart } from "./SolutionChart";
 import { useFileFromAsset } from "~/routes/projects.$projectId.$processingType/components/optimos/hooks/useFetchedAsset";
 import { AssetType, getAsset } from "~/services/assets";
-import { checkFront, FRONT_STATUS, isMadDominated, isNonMadDominated } from "~/shared/pareto_helper";
+import { addToFront, FRONT_STATUS, isMadDominated, isNonMadDominated } from "~/shared/pareto_helper";
 import JSZip from "jszip";
 import toast from "react-hot-toast";
 
@@ -132,39 +132,26 @@ const OptimizationResults = (props: SimulationResultsProps) => {
     }
   }, [request, user]);
 
-  const solutions_by_pareto_front = React.useMemo(() => {
-    const isMad = algorithm === "HC-FLEX";
+  const lastParetoFront = React.useMemo(() => {
+    const isMad = false; //algorithm === "HC-FLEX";
     if (!report || (!report?.final_solutions && !report.current_solution) || !algorithm) return [];
-    if (!report?.final_solutions && report.current_solution) return [[report!.current_solution]];
-    const pareto_fronts: Solution[][] = [];
-
+    if (!report?.final_solutions && report.current_solution) return [report!.current_solution];
+    var latestFront: Solution[] = [];
     for (let solution of report?.final_solutions ?? []) {
-      if (solution.iteration === 0) {
-        pareto_fronts.push([solution]);
-        continue;
-      }
-      const last_front = pareto_fronts[pareto_fronts.length - 1];
-      const front_status = checkFront(solution, last_front, isMad);
-
-      if (front_status === FRONT_STATUS.IN_FRONT) {
-        last_front.push(solution);
-      } else if (front_status === FRONT_STATUS.DOMINATES_FRONT) {
-        pareto_fronts.push([solution]);
-      }
+      latestFront = addToFront(solution, latestFront, isMad);
     }
-    return pareto_fronts;
+    return latestFront;
   }, [algorithm, report]);
   if (!report || !algorithm)
     return (
-      <Grid container justifyContent="center" alignItems="center" height="100vh" flexDirection={"column"} flex>
+      <Grid container justifyContent="center" alignItems="center" height="100vh" flexDirection={"column"}>
         <CircularProgress size={50} />
         <br></br>
         <Typography variant="h6">Loading...</Typography>
       </Grid>
     );
 
-  const final_pareto_front = solutions_by_pareto_front[solutions_by_pareto_front.length - 1];
-  const all_but_last_pareto_front = solutions_by_pareto_front.slice(0, solutions_by_pareto_front.length - 1).reverse();
+  const all_but_last_pareto_front = report?.final_solutions?.filter((sol) => !lastParetoFront.includes(sol)) ?? [];
 
   const final_metrics = report.final_solution_metrics?.[0];
   const initial_solution = report.initial_solution;
@@ -272,8 +259,9 @@ const OptimizationResults = (props: SimulationResultsProps) => {
                       </Grid>
 
                       <SolutionChart
-                        solutions={final_pareto_front ?? []}
-                        // initialSolution={report.initial_solution}
+                        optimalSolutions={lastParetoFront}
+                        otherSolutions={all_but_last_pareto_front}
+                        initialSolution={report.initial_solution}
                         averageCost={final_metrics.ave_cost}
                         averageTime={final_metrics.ave_time}
                       />
@@ -297,7 +285,7 @@ const OptimizationResults = (props: SimulationResultsProps) => {
                 </Grid>
               </Paper>
               <Grid container>
-                {final_pareto_front.map((solution, index) => (
+                {lastParetoFront.map((solution, index) => (
                   <Grid item xs={12} key={`grid-${index}`} id={"solution_" + index}>
                     <OptimosSolution
                       key={index}
@@ -313,25 +301,21 @@ const OptimizationResults = (props: SimulationResultsProps) => {
                   </Grid>
                 )}
                 <Grid item xs={12} my={3}>
-                  {all_but_last_pareto_front.map((pareto_front, paretoIndex) => (
-                    <Accordion key={"pareto-front-" + paretoIndex} slotProps={{ transition: { unmountOnExit: true } }}>
-                      <AccordionSummary>
-                        Solution {String(all_but_last_pareto_front.length - paretoIndex)}
-                      </AccordionSummary>
-                      <AccordionDetails>
-                        {pareto_front?.map((solution, index) => (
-                          <Grid item xs={12} key={`grid-${index}`} id={"solution_" + index}>
-                            <OptimosSolution
-                              key={index}
-                              solution={solution}
-                              finalMetrics={final_metrics}
-                              initialSolution={initial_solution}
-                            ></OptimosSolution>
-                          </Grid>
-                        ))}
-                      </AccordionDetails>
-                    </Accordion>
-                  ))}
+                  <Accordion key={"non-optimal-solutions"} slotProps={{ transition: { unmountOnExit: true } }}>
+                    <AccordionSummary>Non Optimal Solutions</AccordionSummary>
+                    <AccordionDetails>
+                      {all_but_last_pareto_front.map((solution, index) => (
+                        <Grid item xs={12} key={`grid-${index}`} id={"solution_" + index}>
+                          <OptimosSolution
+                            key={index}
+                            solution={solution}
+                            finalMetrics={final_metrics}
+                            initialSolution={initial_solution}
+                          ></OptimosSolution>
+                        </Grid>
+                      ))}
+                    </AccordionDetails>
+                  </Accordion>
                 </Grid>
               </Grid>
             </Grid>
