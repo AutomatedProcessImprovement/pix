@@ -151,7 +151,8 @@ const OptimizationResults = (props: SimulationResultsProps) => {
       </Grid>
     );
 
-  const all_but_last_pareto_front = report?.final_solutions?.filter((sol) => !lastParetoFront.includes(sol)) ?? [];
+  const all_but_last_pareto_front =
+    report?.final_solutions?.filter((sol) => sol.iteration !== 0 && !lastParetoFront.includes(sol)) ?? [];
   const all_but_last_pareto_front_in_chunks_of_25 = all_but_last_pareto_front.reduce(
     (acc, solution) => {
       const current_chunk = acc[acc.length - 1];
@@ -311,6 +312,17 @@ const OptimizationResults = (props: SimulationResultsProps) => {
                   </Grid>
                 )}
                 <Grid item xs={12} my={3}>
+                  <Accordion
+                    id="initial-solution-acc"
+                    key="initial-solution"
+                    slotProps={{ transition: { unmountOnExit: true } }}
+                  >
+                    <AccordionSummary>Initial Solution</AccordionSummary>
+                    <AccordionDetails>
+                      <OptimosSolution initialSolution={initial_solution} solution={initial_solution}></OptimosSolution>
+                    </AccordionDetails>
+                  </Accordion>
+
                   {all_but_last_pareto_front_in_chunks_of_25.map((chunk, index) => (
                     <Accordion
                       key={`non-optimal-solution-chunk-${index}`}
