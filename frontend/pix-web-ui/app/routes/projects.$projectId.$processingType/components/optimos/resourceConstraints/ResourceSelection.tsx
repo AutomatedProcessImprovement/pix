@@ -109,7 +109,7 @@ export const ResourceSelection: FC<ResourceSelectionProps> = ({ currResourceId, 
           <Grid item container xs={5} justifyContent={"center"} alignItems={"center"}>
             <Grid container width={"100%"} height={"80%"} justifyContent={"center"} alignItems={"center"}>
               <Grid item width={"100%"}>
-                <Typography variant="caption">COPY CONSTRAINTS</Typography>
+                <Typography variant="caption">COPY ALL CONSTRAINTS</Typography>
                 <ButtonGroup fullWidth>
                   <Button
                     variant="outlined"
@@ -137,7 +137,7 @@ export const ResourceSelection: FC<ResourceSelectionProps> = ({ currResourceId, 
                 </ButtonGroup>
               </Grid>
               <Grid item width={"100%"}>
-                <Typography variant="caption">COPY TIMETABLE</Typography>
+                <Typography variant="caption">COPY ONLY TIME CONSTRAINTS</Typography>
                 <ButtonGroup fullWidth>
                   <Button
                     variant="outlined"
