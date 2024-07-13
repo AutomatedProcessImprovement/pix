@@ -11,7 +11,7 @@ import { ProcessingAppSection } from "./ProcessingAppSection";
 export default function InputAssets() {
   const setSelectedAssets = useContext(SetSelectedAssetsContext);
   const processingType = useProcessingType();
-  const assets = useContext(AssetsContext);
+  const [assets] = useContext(AssetsContext);
   const selectedAssets = useContext(SelectedAssetsContext);
 
   function handleClick(asset: Asset) {

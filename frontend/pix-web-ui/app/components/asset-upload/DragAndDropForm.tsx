@@ -10,6 +10,7 @@ import { unpackAndMatchZip } from "./zip_helper";
 import { FileType, uploadFile } from "~/services/files";
 import { UserContext } from "~/routes/contexts";
 import { ProjectContext } from "~/routes/projects.$projectId/contexts";
+import { AssetsContext } from "~/routes/projects.$projectId.$processingType/contexts";
 
 export function DragAndDropForm({ assetType, close }: { assetType: AssetType; close: () => void }) {
   // DragAndDrop component is used to upload files to the server. It keeps track of three different asset types:
@@ -278,6 +279,65 @@ export function DragAndDropForm({ assetType, close }: { assetType: AssetType; cl
     }
   }
 
+  const [inputAssets, setInputAssets] = useContext(AssetsContext);
+
+  async function uploadZip() {
+    if (!user || !user.token || !project) return;
+    const { process_models, simulation_models, optimos_constraints, optimos_configurations, errors } =
+      await unpackAndMatchZip(zipFile.arrayBuffer());
+
+    const clonedInputAssets = [...inputAssets];
+    if (process_models.length > 0 && simulation_models.length > 0) {
+      const [processModelFileName, processModelContent] = process_models[0];
+      const processModelFile = await uploadFile(
+        new Blob([processModelContent]),
+        processModelFileName,
+        FileType.PROCESS_MODEL_BPMN,
+        user.token
+      );
+
+      const [simulationModelFileName, simulationModelContent] = simulation_models[0];
+      const simulationModelFile = await uploadFile(
+        new Blob([simulationModelContent]),
+        simulationModelFileName,
+        FileType.SIMULATION_MODEL_PROSIMOS_JSON,
+        user.token
+      );
+
+      const asset = await createAsset(
+        [processModelFile.id, simulationModelFile.id],
+        processModelFileName,
+        AssetType.SIMULATION_MODEL,
+        project.id,
+        user.token
+      );
+      clonedInputAssets.push(asset);
+    }
+
+    if (optimos_constraints.length > 0) {
+      const optimosConfigFiles = [];
+      const [fileName, content] = optimos_constraints[0];
+      const file = await uploadFile(new Blob([content]), fileName, FileType.CONSTRAINTS_MODEL_OPTIMOS_JSON, user.token);
+      optimosConfigFiles.push(file.id);
+      if (optimos_configurations.length > 0) {
+        const [fileName, content] = optimos_configurations[0];
+        const file = await uploadFile(new Blob([content]), fileName, FileType.CONFIGURATION_OPTIMOS_YAML, user.token);
+        optimosConfigFiles.push(file.id);
+      }
+      const asset = await createAsset(
+        optimosConfigFiles,
+        fileName,
+        AssetType.OPTIMOS_CONFIGURATION,
+        project.id,
+        user.token
+      );
+      clonedInputAssets.push(asset);
+    }
+    console.log(clonedInputAssets);
+    setInputAssets(clonedInputAssets);
+    close();
+  }
+
   return (
     <div className="flex items-center justify-center">
       <fetcher.Form
@@ -485,70 +545,7 @@ export function DragAndDropForm({ assetType, close }: { assetType: AssetType; cl
           </button>
         )}
         {zipFile && (
-          <button
-            className="w-48"
-            onClick={async () => {
-              if (!user || !user.token || !project) return;
-              const { process_models, simulation_models, optimos_constraints, optimos_configurations, errors } =
-                await unpackAndMatchZip(zipFile.arrayBuffer());
-
-              if (process_models.length > 0 && simulation_models.length > 0) {
-                const [processModelFileName, processModelContent] = process_models[0];
-                const processModelFile = await uploadFile(
-                  new Blob([processModelContent]),
-                  processModelFileName,
-                  FileType.PROCESS_MODEL_BPMN,
-                  user.token
-                );
-
-                const [simulationModelFileName, simulationModelContent] = simulation_models[0];
-                const simulationModelFile = await uploadFile(
-                  new Blob([simulationModelContent]),
-                  simulationModelFileName,
-                  FileType.SIMULATION_MODEL_PROSIMOS_JSON,
-                  user.token
-                );
-
-                await createAsset(
-                  [processModelFile.id, simulationModelFile.id],
-                  processModelFileName,
-                  AssetType.SIMULATION_MODEL,
-                  project.id,
-                  user.token
-                );
-              }
-
-              if (optimos_constraints.length > 0) {
-                const optimosConfigFiles = [];
-                const [fileName, content] = optimos_constraints[0];
-                const file = await uploadFile(
-                  new Blob([content]),
-                  fileName,
-                  FileType.CONSTRAINTS_MODEL_OPTIMOS_JSON,
-                  user.token
-                );
-                optimosConfigFiles.push(file.id);
-                if (optimos_configurations.length > 0) {
-                  const [fileName, content] = optimos_configurations[0];
-                  const file = await uploadFile(
-                    new Blob([content]),
-                    fileName,
-                    FileType.CONFIGURATION_OPTIMOS_YAML,
-                    user.token
-                  );
-                  optimosConfigFiles.push(file.id);
-                }
-                await createAsset(
-                  optimosConfigFiles,
-                  fileName,
-                  AssetType.OPTIMOS_CONFIGURATION,
-                  project.id,
-                  user.token
-                );
-              }
-              close();
-            }}
-          >
+          <button className="w-48" onClick={uploadZip}>
             Unpack Zip & Upload
           </button>
         )}

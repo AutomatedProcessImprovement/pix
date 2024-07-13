@@ -153,7 +153,7 @@ export const ResourceSelection: FC<ResourceSelectionProps> = ({ currResourceId, 
                     }}
                     startIcon={<ContentPasteIcon />}
                   >
-                    Apply Timetable to All
+                    Apply time constraints to All
                   </Button>
                 </ButtonGroup>
               </Grid>

@@ -10,7 +10,7 @@ import OutputAssets from "./OutputAssets";
 import ProcessingSetup from "./ProcessingSetup";
 
 export default function ProcessingApp({
-  assets,
+  assets: initialAssets,
   processingType,
   processingRequests,
 }: {
@@ -18,6 +18,7 @@ export default function ProcessingApp({
   processingType: ProcessingType;
   processingRequests: ProcessingRequest[];
 }) {
+  const assetState = useState<Asset[]>(initialAssets);
   const [selectedAssets, setSelectedAssets] = useState<Asset[]>([]);
   const actionData = useActionData<typeof action>();
 
@@ -26,7 +27,7 @@ export default function ProcessingApp({
   // }, [processingType, actionData?.shouldResetSelectedAssets]);
 
   return (
-    <AssetsContext.Provider value={assets}>
+    <AssetsContext.Provider value={assetState}>
       <SetSelectedAssetsContext.Provider value={setSelectedAssets}>
         <SelectedAssetsContext.Provider value={selectedAssets}>
           <InputAssets />

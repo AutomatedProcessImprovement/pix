@@ -68,7 +68,7 @@ export const ResourceTableRow: FC<ResourceRowProps> = React.memo((props) => {
 
   return (
     <React.Fragment>
-      <TableRow sx={{ "& > *": { borderBottom: "unset" } }}>
+      <TableRow sx={{ "& > *": { borderBottom: "unset" } }} id={`resource-row-${resource.id}`}>
         <TableCell>
           <IconButton aria-label="expand row" size="small" onClick={() => setOpen(!open)}>
             {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
@@ -88,7 +88,7 @@ export const ResourceTableRow: FC<ResourceRowProps> = React.memo((props) => {
           <ResourcesTableCell key={column.id} column={column} resource={resource} />
         ))}
       </TableRow>
-      <TableRow>
+      <TableRow id={`resource-row-constraints-${resource.id}`}>
         <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={12}>
           <Collapse in={open} timeout="auto" unmountOnExit>
             <Box sx={{ margin: 1 }} width={"100%"}>
