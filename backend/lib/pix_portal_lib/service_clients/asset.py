@@ -6,7 +6,8 @@ from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 from typing import Any, Optional, Union
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
+
 from uuid import UUID
 
 import httpx
@@ -158,7 +159,9 @@ class AssetServiceClient(SelfAuthenticatingClient):
             url, headers=await self.request_headers(token), params={"is_internal": is_internal}
         )
         response.raise_for_status()
-        return AssetLocationResponse(**response.json()).location
+        location = AssetLocationResponse(**response.json()).location
+        # Change the host, back to _base_url
+        return urlparse(location)._replace(netloc=urlparse(self._base_url).netloc).geturl()
 
     async def create_asset(
         self,
@@ -204,7 +207,6 @@ class AssetServiceClient(SelfAuthenticatingClient):
         asset_id: str,
         token: Optional[str] = None,
     ) -> bool:
-
         asset = await self.get_asset(asset_id, token)
         await self._validate_files(asset.type, files)
 
