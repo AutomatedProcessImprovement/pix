@@ -3,13 +3,12 @@ import json
 import uuid
 import logging
 import shutil
-import subprocess
 import traceback
-from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Optional, Union
 from uuid import UUID
+from xml.etree import ElementTree
 import zipfile
 
 import tempfile
@@ -17,7 +16,6 @@ import os
 import time
 
 import yaml
-from pix_portal_lib.kafka_clients.email_producer import EmailNotificationProducer, EmailNotificationRequest
 from pix_portal_lib.service_clients.asset import Asset, AssetServiceClient, AssetType, File_
 from pix_portal_lib.service_clients.file import FileType
 from pix_portal_lib.service_clients.processing_request import (
@@ -29,20 +27,15 @@ from pix_portal_lib.service_clients.project import ProjectServiceClient
 from pix_portal_lib.service_clients.user import UserServiceClient
 
 
-from pareto_algorithms_and_metrics.main import run_optimization
-from pareto_algorithms_and_metrics.iterations_handler import IterationInfo
-from pareto_algorithms_and_metrics.pareto_metrics import AlgorithmResults
-from data_structures.iteration_info import IterationNextType
-from data_structures.solution_json_output import FullOutputJson, SolutionJson
-from data_structures.simulation_info import SimulationInfo
-from support_modules.plot_statistics_handler import (
-    save_allocation_statistics_into_SolutionObject,
-    return_api_solution_statistics,
-)
-from support_modules.constraints_generator import generate_constraint_file
-from support_modules.file_manager import get_stats_without_writing, load_timetable_for_key, load_constraints_for_key
-
 from optimos_worker.settings import settings
+
+
+from o2.models.constraints import ConstraintsType
+from o2.models.timetable import TimetableType
+from o2.store import Store
+from o2.models.state import State
+from o2.hill_climber import HillClimber
+from o2.models.json_solution import JSONSolutions
 
 
 class InputAssetMissing(Exception):
@@ -67,7 +60,6 @@ class OptimosService:
 
         self._assets_base_dir.mkdir(parents=True, exist_ok=True)
         self._optimos_results_base_dir.mkdir(parents=True, exist_ok=True)
-        self._initial_solution: Optional[SolutionJson] = None
 
     async def process(self, processing_request: ProcessingRequest):
         """
@@ -117,11 +109,11 @@ class OptimosService:
             )
 
             # run optimos, it can take hours
-            stats_file = await self.optimization_task(processing_request, assets, output_asset_id)
-            dirs_to_delete.append(stats_file)
+            await self.optimization_task(processing_request, assets, output_asset_id)
+            # dirs_to_delete.append(stats_file)
 
             # upload results and create corresponding assets
-            await self.upload_results(stats_file, output_asset_id)
+            # await self.upload_results(stats_file, output_asset_id)
 
             # update processing request status
 
@@ -212,28 +204,46 @@ class OptimosService:
             start_time=datetime.utcnow(),
         )
 
-        output = run_optimization(
-            model_path,
-            sim_param_path,
-            constraints_path,
-            num_instances,
-            algorithm,
-            approach,
-            stats_file.name,
-            log_name,
-            self.get_iteration_callback(output_asset_id),
-            processing_request,  # type: ignore
+        with open(sim_param_path, "r") as f:
+            timetable = TimetableType.from_dict(json.load(f))
+
+        with open(constraints_path, "r") as f:
+            constraints = ConstraintsType.from_dict(json.load(f))
+
+        with open(model_path, "r") as f:
+            bpmn_definition = f.read()
+
+        bpmn_tree = ElementTree.parse(model_path)
+
+        initial_state = State(
+            bpmn_definition=bpmn_definition,
+            bpmn_tree=bpmn_tree,
+            timetable=timetable,
         )
+        store = Store(
+            state=initial_state,
+            constraints=constraints,
+        )
+        store.settings.optimos_legacy_mode = True
+        # Create base evaluation
+        store.evaluate()
+        hill_climber = HillClimber(store)
+        generator = hill_climber.get_iteration_generator()
+        for iteration_evaluation in generator:
+            await self.async_iteration_callback(
+                JSONSolutions.from_store(store),
+                output_asset_id,
+            )
 
-        jsonContent = json.dumps(output, default=lambda o: o.to_json())
-        with open("output.json", "w") as f:
-            f.write(jsonContent)
+        # jsonContent = json.dumps(output, default=lambda o: o.to_json())
+        # with open("output.json", "w") as f:
+        #     f.write(jsonContent)
 
-        # Zip the stats_file, and return it's path
-        with zipfile.ZipFile(f"{stats_file.name}.zip", "w", compression=zipfile.ZIP_DEFLATED) as zipf:
-            zipf.write(stats_file.name, stats_filename)
+        # # Zip the stats_file, and return it's path
+        # with zipfile.ZipFile(f"{stats_file.name}.zip", "w", compression=zipfile.ZIP_DEFLATED) as zipf:
+        #     zipf.write(stats_file.name, stats_filename)
 
-        return Path(f"{stats_file.name}.zip")
+        # return Path(f"{stats_file.name}.zip")
 
     @staticmethod
     def _find_file_by_type(files: list[File_], type: FileType) -> Optional[File_]:
@@ -326,45 +336,12 @@ class OptimosService:
 
         return optimos_report_asset_id
 
-    def get_iteration_callback(self, output_asset_id: str):
-        print("Iteration callback called (sync)")
-        return lambda iteration_info, approach, iteration: asyncio.run(
-            self.async_iteration_callback(iteration_info, approach, output_asset_id, iteration)
-        )
-
     async def async_iteration_callback(
-        self, iteration_info: IterationNextType, approach: str, output_asset_id: str, iteration: int
+        self,
+        json_solutions: JSONSolutions,
+        output_asset_id: str,
     ):
-        print(f"Iteration callback called (async) for iteration {iteration}")
-        (pool_info, simulation_info, non_optimal_distance) = iteration_info
-        if pool_info is None or simulation_info is None:
-            return
-
-        key = pool_info.id
-        sim_params = load_timetable_for_key(key)
-        cons_params = load_constraints_for_key(key)
-        if sim_params is None or cons_params is None:
-            return
-        solution_json = SolutionJson(
-            solution_info=simulation_info,
-            sim_params=sim_params,
-            cons_params=cons_params,
-            name=approach,
-            iteration=iteration,
-        )
-
-        if iteration == 1:
-            self._initial_solution = solution_json
-
-        output = FullOutputJson(
-            name=approach + "-" + pool_info.id,
-            initial_solution=self._initial_solution,
-            final_solutions=None,
-            current_solution=solution_json,
-            final_solution_metrics=None,
-        )
-
-        jsonContent = json.dumps(output, default=lambda o: o.to_json())
+        jsonContent = json.dumps(json_solutions, default=lambda o: o.to_json())
         with open("output.json", "w") as f:
             f.write(jsonContent)
 
