@@ -1,5 +1,12 @@
 import type { ReactNode } from "react";
-import { formatSeconds, formatHours, formatHourlyRate, formatCurrency, formatPercentage } from "~/shared/num_helper";
+import {
+  formatSeconds,
+  formatHours,
+  formatHourlyRate,
+  formatCurrency,
+  formatPercentage,
+  formatMilliseconds,
+} from "~/shared/num_helper";
 import type { EnhancedResource } from "~/shared/optimos_json_type";
 
 export const COLUMN_DEFINITIONS: {
@@ -9,9 +16,9 @@ export const COLUMN_DEFINITIONS: {
   lowerIsBetter?: boolean;
   minWidth?: string | number;
 }[] = [
-  { id: "resource_name", label: "Name", formatFn: (x) => x, minWidth: "10em" },
-  { id: "total_worktime", label: "Worktime", formatFn: formatSeconds, lowerIsBetter: false, minWidth: "10em" },
-  { id: "available_time", label: "Available Time", formatFn: formatHours, lowerIsBetter: true },
+  { id: "name", label: "Name", formatFn: (x) => x, minWidth: "10em" },
+  { id: "total_worktime", label: "Worktime", formatFn: formatMilliseconds, lowerIsBetter: false, minWidth: "10em" },
+  { id: "available_time", label: "Available Time", formatFn: formatSeconds, lowerIsBetter: true },
   { id: "cost_per_hour", label: "Hourly Rate", formatFn: formatHourlyRate, lowerIsBetter: true },
   { id: "total_cost", label: "Total Cost", formatFn: formatCurrency, lowerIsBetter: true },
   { id: "utilization", label: "Utilization", formatFn: formatPercentage, lowerIsBetter: false },

@@ -36,10 +36,7 @@ export const createInitialResourceStats = (resourceId: string, initialSolution: 
     total_cost: pool_cost[resourceId],
     utilization: pool_utilization[resourceId],
     available_time: available_time[resourceId],
-    tasks:
-      task_allocations[resourceId]?.map((taskIndex) => {
-        return Object.keys(task_pools)[taskIndex];
-      }) ?? [],
+    tasks: task_allocations[resourceId],
     is_duplicate: false,
     are_tasks_different: false,
     is_deleted: false,
@@ -58,12 +55,12 @@ export const useInitialEnhancedResource = (resourceId?: string): EnhancedResourc
   return initialEnhancedResource;
 };
 
-export const getBaseName = (resourceName: string) => resourceName.replace(/_COPY.*$/, "");
+export const getBaseName = (resourceName: string) => resourceName.replace(/_COPY.*$/, "").replace(/_clone.*$/, "");
 
 export const useInitialEnhancedResourceByName = (resourceName: string): EnhancedResource | null => {
   const initialSolution = useInitialSolution();
   const pools = initialSolution.solution_info.pools_info.pools;
-  const resourceId = Object.keys(pools).find((id) => pools[id].resource_name === getBaseName(resourceName));
+  const resourceId = Object.keys(pools).find((id) => pools[id].name === getBaseName(resourceName));
 
   return useInitialEnhancedResource(resourceId);
 };
@@ -75,7 +72,7 @@ export const useIsInitialSolutions = (poolsInfoId: string) => {
 
 export const getInitialResourceByName = (initialSolution: Solution, resourceName: string) => {
   const pools = initialSolution.solution_info.pools_info.pools;
-  const resourceId = Object.keys(pools).find((id) => pools[id].resource_name === getBaseName(resourceName));
+  const resourceId = Object.keys(pools).find((id) => pools[id].name === getBaseName(resourceName));
   if (!resourceId) return null;
   return initialSolution.solution_info.pools_info.pools[resourceId];
 };

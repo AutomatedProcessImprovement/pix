@@ -163,6 +163,7 @@ class OptimosService:
         self._processing_request_service_client.nullify_token()
 
     async def optimization_task(self, processing_request: ProcessingRequest, assets: list[Asset], output_asset_id: str):
+        logger.info("Starting optimization_task")
         config = self._get_config(assets)
         model_filename = config["model_filename"]
         sim_params_file = config["sim_params_file"]
@@ -190,7 +191,6 @@ class OptimosService:
         stats_file = tempfile.NamedTemporaryFile(
             mode="w+", suffix=".json", prefix="stats_", delete=False, dir=data_path
         )
-        stats_filename = stats_file.name.rsplit(os.sep, 1)[-1]
 
         # # create result file for saving logs
         # logs_file = tempfile.NamedTemporaryFile(mode="w+", suffix=".csv", prefix="logs_", delete=False,
@@ -229,21 +229,16 @@ class OptimosService:
         store.evaluate()
         hill_climber = HillClimber(store)
         generator = hill_climber.get_iteration_generator()
+        logger.info("Created Store")
         for iteration_evaluation in generator:
-            await self.async_iteration_callback(
-                JSONSolutions.from_store(store),
-                output_asset_id,
-            )
-
-        # jsonContent = json.dumps(output, default=lambda o: o.to_json())
-        # with open("output.json", "w") as f:
-        #     f.write(jsonContent)
-
-        # # Zip the stats_file, and return it's path
-        # with zipfile.ZipFile(f"{stats_file.name}.zip", "w", compression=zipfile.ZIP_DEFLATED) as zipf:
-        #     zipf.write(stats_file.name, stats_filename)
-
-        # return Path(f"{stats_file.name}.zip")
+            logger.info("Finished Iteration")
+            await self.async_iteration_callback(store, output_asset_id, stats_file)
+        await self.async_iteration_callback(
+            store,
+            output_asset_id,
+            stats_file,
+            last_iteration=True,
+        )
 
     @staticmethod
     def _find_file_by_type(files: list[File_], type: FileType) -> Optional[File_]:
@@ -338,12 +333,21 @@ class OptimosService:
 
     async def async_iteration_callback(
         self,
-        json_solutions: JSONSolutions,
+        store: Store,
         output_asset_id: str,
+        stats_file: tempfile._TemporaryFileWrapper,
+        last_iteration=False,
     ):
-        jsonContent = json.dumps(json_solutions, default=lambda o: o.to_json())
-        with open("output.json", "w") as f:
-            f.write(jsonContent)
+        json_solutions = JSONSolutions.from_store(store, last_iteration=last_iteration)
+        jsonContent = json_solutions.to_json()
 
-        await self.upload_results(Path("output.json"), output_asset_id)
+        stats_file.truncate(0)
+        stats_file.seek(0)
+        stats_file.write(jsonContent)
+
+        stats_filename = stats_file.name.rsplit(os.sep, 1)[-1]
+        with zipfile.ZipFile(f"{stats_file.name}.zip", "w", compression=zipfile.ZIP_DEFLATED) as zipf:
+            zipf.write(stats_file.name, stats_filename)
+
+        await self.upload_results(Path(f"{stats_file.name}.zip"), output_asset_id)
         print("Iteration callback finished")

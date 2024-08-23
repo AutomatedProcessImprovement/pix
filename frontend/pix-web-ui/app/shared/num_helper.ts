@@ -23,6 +23,9 @@ export const formatSeconds = (seconds?: number, includeHours = true) => {
   return result;
 };
 
+export const formatMilliseconds = (milliseconds?: number) =>
+  formatSeconds(milliseconds ? milliseconds / 1000 : undefined);
+
 export const formatHours = (hours?: number) => {
   if (hours === undefined) return "";
   return `${formatNumber(hours)}h`;

@@ -164,8 +164,11 @@ const OptimizationResults = (props: SimulationResultsProps) => {
     [[]] as Solution[][]
   );
 
-  const final_metrics = report.final_solution_metrics?.[0];
+  const final_metrics = report.final_solution_metrics;
   const initial_solution = report.initial_solution;
+  const constraints = report.cons_params;
+
+  console.log(report);
 
   return (
     <InitialSolutionContext.Provider value={initial_solution}>
@@ -225,7 +228,7 @@ const OptimizationResults = (props: SimulationResultsProps) => {
                       Download json
                     </a>
                   </Grid>
-                  {final_metrics ? (
+                  {!report.current_solution ? (
                     <Grid container>
                       <Grid item xs={5}>
                         <Typography
@@ -303,6 +306,7 @@ const OptimizationResults = (props: SimulationResultsProps) => {
                       solution={solution}
                       finalMetrics={final_metrics}
                       initialSolution={initial_solution}
+                      constraints={constraints}
                     ></OptimosSolution>
                   </Grid>
                 ))}
@@ -322,6 +326,7 @@ const OptimizationResults = (props: SimulationResultsProps) => {
                           <OptimosSolution
                             initialSolution={initial_solution}
                             solution={initial_solution}
+                            constraints={constraints}
                           ></OptimosSolution>
                         </AccordionDetails>
                       </Accordion>

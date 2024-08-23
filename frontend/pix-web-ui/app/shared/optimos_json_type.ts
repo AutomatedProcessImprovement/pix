@@ -27,13 +27,13 @@ export interface FullOutputJson {
   initial_solution: Solution;
   final_solutions?: Solution[];
   current_solution?: Solution;
-  final_solution_metrics: FinalSolutionMetric[];
+  final_solution_metrics: FinalSolutionMetric;
+  cons_params: ConsParams;
 }
 
 export interface Solution {
   solution_info: SolutionInfo;
   sim_params: SimParams;
-  cons_params: ConsParams;
   name: string;
   iteration: number;
 }
@@ -62,13 +62,13 @@ export interface DeviationInfo {
 export interface PoolsInfo {
   pools: { [key: string]: Resource };
   task_pools: { [key: string]: ResourceListItem[] };
-  task_allocations: { [key: string]: number[] };
+  task_allocations: { [key: string]: string[] };
   id: string;
 }
 
 export interface Resource {
   id: string;
-  resource_name: string;
+  name: string;
   time_var: number;
   total_amount: number;
   cost_per_hour: number;
@@ -85,6 +85,7 @@ export interface Resource {
   day_free_cap: ConstraintWorkMask;
   remaining_shifts: ConstraintWorkMask;
   shifts: Shift[];
+  assigned_tasks: string[];
 }
 
 export interface ConstraintWorkMask {

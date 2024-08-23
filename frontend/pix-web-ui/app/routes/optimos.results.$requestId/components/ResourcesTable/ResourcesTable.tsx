@@ -164,15 +164,12 @@ const createEnhancedResourceMappingFunction = (
     pool_time,
     pool_cost,
     available_time,
-    pools_info: { task_allocations, task_pools },
+    pools_info: { task_allocations },
   } = solutionInfo;
 
   return (resource: Resource): EnhancedResource => {
-    const tasks =
-      task_allocations[resource.id]?.map((taskIndex) => {
-        return Object.keys(task_pools)[taskIndex];
-      }) ?? [];
-    const initialResource = getInitialResourceByName(initialSolution, resource.resource_name);
+    const tasks = resource.assigned_tasks;
+    const initialResource = getInitialResourceByName(initialSolution, resource.name);
     const enhancedInitialResource = !initialResource
       ? null
       : {
@@ -183,8 +180,8 @@ const createEnhancedResourceMappingFunction = (
     const { newTasks, oldTasks, removedTasks } = splitTasks(tasks, enhancedInitialResource?.tasks);
     const isDeleted = deletedResources.some((r) => r.id === resource.id);
     const isDuplicate =
-      getBaseName(resource.resource_name) !== resource.resource_name &&
-      resources.filter((r) => getBaseName(r.resource_name) === getBaseName(resource.resource_name)).length > 1;
+      getBaseName(resource.name) !== resource.name &&
+      resources.filter((r) => getBaseName(r.name) === getBaseName(resource.name)).length > 1;
 
     return {
       ...resource,
@@ -196,8 +193,8 @@ const createEnhancedResourceMappingFunction = (
       initial_resource: enhancedInitialResource || undefined,
       is_duplicate: isDuplicate,
       is_deleted: isDeleted,
-      are_tasks_different: !isDeleted && (newTasks.length > 0 || (removedTasks?.length ?? 0) > 0),
-      are_shifts_different: !isDeleted && areShiftsDifferent(resource, initialResource),
+      are_tasks_different: !isDuplicate && !isDeleted && (newTasks.length > 0 || (removedTasks?.length ?? 0) > 0),
+      are_shifts_different: !isDuplicate && !isDeleted && areShiftsDifferent(resource, initialResource),
       new_tasks: newTasks,
       removed_tasks: removedTasks ?? [],
       old_tasks: oldTasks,
