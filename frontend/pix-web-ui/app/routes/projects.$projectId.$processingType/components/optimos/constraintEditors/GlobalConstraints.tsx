@@ -40,37 +40,7 @@ const GlobalConstraints = (props: GlobalConstraintsProps) => {
               )}
             />
           </Grid>
-          <Grid item xs={6}>
-            <Controller
-              name="scenarioProperties.algorithm"
-              control={control}
-              rules={{
-                required: REQUIRED_ERROR_MSG,
-              }}
-              render={({ field: { onChange, value }, fieldState: { error } }) => (
-                <>
-                  <InputLabel id={"algorithm-select-label"}>Algorithm</InputLabel>
-                  <Select
-                    required={true}
-                    name={"algorithm"}
-                    sx={{ minWidth: 250 }}
-                    labelId="algorithm-select-label"
-                    id="approach-select"
-                    value={value}
-                    label="Algorithm"
-                    onChange={(e) => {
-                      onChange(String(e.target.value));
-                    }}
-                    error={error !== undefined}
-                    variant="standard"
-                  >
-                    <MenuItem value={"HC-STRICT"}>HC-STRICT | Hill Climb strict</MenuItem>
-                    <MenuItem value={"HC-FLEX"}>HC-FLEX | Hill Climb flex</MenuItem>
-                  </Select>
-                </>
-              )}
-            />
-          </Grid>
+
           <Grid item xs={6}>
             <Controller
               name="scenarioProperties.num_instances"
@@ -126,11 +96,8 @@ const GlobalConstraints = (props: GlobalConstraintsProps) => {
                     error={error !== undefined}
                     variant="standard"
                   >
-                    <MenuItem value={"CA"}>CA | Calendar Only</MenuItem>
-                    <MenuItem value={"AR"}>AR | Add/Remove Only</MenuItem>
-                    <MenuItem value={"CO"}>CO | CA/AR combined </MenuItem>
-                    <MenuItem value={"CAAR"}>CAAR | First CA then AR </MenuItem>
-                    <MenuItem value={"ARCA"}>ARCA | First AR then CA </MenuItem>
+                    <MenuItem value={"CAAR"}>First Calendar Changes then Resource Add/Remove</MenuItem>
+                    <MenuItem value={"ARCA"}>First Resource Add/Remove then Calendar Changes </MenuItem>
                   </Select>
                 </>
               )}

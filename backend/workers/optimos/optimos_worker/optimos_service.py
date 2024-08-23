@@ -224,7 +224,11 @@ class OptimosService:
             state=initial_state,
             constraints=constraints,
         )
+        # Settings
         store.settings.optimos_legacy_mode = True
+        store.settings.optimize_calendar_first = approach != "ARCA"
+        store.settings.max_non_improving_actions = num_instances
+
         # Create base evaluation
         store.evaluate()
         hill_climber = HillClimber(store)

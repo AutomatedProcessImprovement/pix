@@ -19,7 +19,7 @@ const DEFAULT_CONFIG: ScenarioProperties = {
   scenario_name: "My first scenario",
   num_instances: 100,
   algorithm: "HC-FLEX",
-  approach: "CO",
+  approach: "CAAR",
 };
 
 export const useMasterFormData = () => {
