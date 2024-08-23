@@ -57,7 +57,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 export default function ProsimosStatisticsPage() {
   const { report } = useLoaderData<typeof loader>();
 
-  if (!report) throw new Error("No report found");
+  if (!report) return <div>No report found (yet). Please try to refresh the page.</div>;
   return (
     <main className="flex flex-col p-8 items-center justify-center overflow-auto">
       <h1 className="text-3xl font-semibold">Simulation Statistics</h1>

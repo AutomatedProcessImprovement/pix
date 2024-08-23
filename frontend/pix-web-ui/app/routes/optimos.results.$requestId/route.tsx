@@ -88,7 +88,7 @@ export const loader = async ({
 export default function OptimosStatisticsPage() {
   const { report, user, processingRequest } = useLoaderData<typeof loader>();
 
-  if (!report || !user || !processingRequest) throw new Error("No report found");
+  if (!report || !user || !processingRequest) return <div>No report found (yet). Please try to refresh the page.</div>;
   return (
     <UserContext.Provider value={user}>
       <div className="min-h-full flex flex-col justify-between">

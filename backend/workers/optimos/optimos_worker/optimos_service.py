@@ -231,6 +231,9 @@ class OptimosService:
         generator = hill_climber.get_iteration_generator()
         logger.info("Created Store")
         for iteration_evaluation in generator:
+            if processing_request.should_be_cancelled:
+                break
+
             logger.info("Finished Iteration")
             await self.async_iteration_callback(store, output_asset_id, stats_file)
         await self.async_iteration_callback(
