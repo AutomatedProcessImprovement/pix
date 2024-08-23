@@ -1,0 +1,19 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch Optimos Worker",
+      "type": "debugpy",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/backend/workers/optimos/",
+      "program": "${workspaceFolder}/backend/workers/optimos/optimos_worker/main.py",
+      "console": "integratedTerminal",
+      "justMyCode": false
+      // If needed add you python exectuable path here, e.g.
+      // "python": "/opt/homebrew/Caskroom/miniconda/base/envs/optimos-python/bin/python"
+    }
+  ]
+}
