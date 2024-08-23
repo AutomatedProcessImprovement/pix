@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pix-portal-lib"
-version = "0.1.56"
+version = "0.1.58"
 description = ""
 authors = ["Ihar Suvorau <ihar.suvorau@gmail.com>"]
 readme = "README.md"

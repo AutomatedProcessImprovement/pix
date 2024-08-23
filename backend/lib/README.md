@@ -20,7 +20,7 @@ Most of the steps are implemented in `build_and_update.sh`. Here's an example of
   poetry version patch # or "minor", or "major"
   ```
 
-- Update the version in dependent packages (this string `pix-portal-lib = { path = "lib/pix_portal_lib-0.1.56-py3-none-any.whl" }` in `pyproject.toml`)
+- Update the version in dependent packages (this string `pix-portal-lib = { path = "lib/pix_portal_lib-0.1.58-py3-none-any.whl" }` in `pyproject.toml`)
 
 - Run the script that copies the library and triggers the update of dependent packages:
 

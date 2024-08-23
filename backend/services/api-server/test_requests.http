@@ -1,3 +1,5 @@
+@user_name=system
+@user_password=secretsecret
 ### Get a JWT
 
 POST http://localhost:8000/auth/jwt/login

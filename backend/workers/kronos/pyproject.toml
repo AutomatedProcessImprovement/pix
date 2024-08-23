@@ -13,7 +13,7 @@ pydantic-settings = "^2.0.3"
 requests = "^2.31.0"
 kafka-python = "^2.0.2"
 httpx = "^0.25.0"
-pix-portal-lib = { path = "lib/pix_portal_lib-0.1.56-py3-none-any.whl" }
+pix-portal-lib = { path = "lib/pix_portal_lib-0.1.58-py3-none-any.whl" }
 wta = { git = "https://github.com/AutomatedProcessImprovement/waiting-time-analysis.git", tag = "1.3.8" }
 
 [tool.poetry.group.dev.dependencies]

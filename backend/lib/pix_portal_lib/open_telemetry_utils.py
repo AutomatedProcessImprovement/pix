@@ -1,4 +1,5 @@
 import logging
+import os
 
 from fastapi import FastAPI
 from opentelemetry import trace, metrics
@@ -18,11 +19,13 @@ from opentelemetry.sdk.resources import Resource, SERVICE_NAME
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
+OTEL_URL = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "otel-collector:4317")
+
 
 def instrument_app(
     app: FastAPI,
     service_name: str,
-    otel_collector_endpoint: str = "http://otel-collector:4317",
+    otel_collector_endpoint: str = "http://" + OTEL_URL,
     httpx: bool = True,
     requests: bool = False,
 ):
@@ -41,7 +44,7 @@ def instrument_app(
 
 def instrument_worker(
     service_name: str,
-    otel_collector_endpoint: str = "http://otel-collector:4317",
+    otel_collector_endpoint: str = "http://" + OTEL_URL,
     httpx: bool = True,
     requests: bool = False,
 ):
