@@ -66,7 +66,7 @@ class AssetServiceClient(SelfAuthenticatingClient):
     def __init__(self):
         super().__init__()
         self._base_url = asset_service_url
-        self._http_client = httpx.AsyncClient()
+        self._http_client = httpx.AsyncClient(timeout=30.0)
         self._file_client = FileServiceClient()
 
     async def download_asset(

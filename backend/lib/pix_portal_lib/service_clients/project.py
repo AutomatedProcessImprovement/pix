@@ -18,7 +18,7 @@ class ProjectNotFound(Exception):
 class ProjectServiceClient(SelfAuthenticatingClient):
     def __init__(self):
         super().__init__()
-        self._client = httpx.AsyncClient()
+        self._client = httpx.AsyncClient(timeout=30.0)
         self._base_url = project_service_url
 
     async def add_asset_to_project(self, project_id: str, asset_id: str, token: Optional[str] = None) -> dict:

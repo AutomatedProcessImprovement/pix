@@ -13,7 +13,7 @@ user_service_url = get_env("USER_SERVICE_URL")
 class UserServiceClient(SelfAuthenticatingClient):
     def __init__(self):
         super().__init__()
-        self._client = httpx.AsyncClient()
+        self._client = httpx.AsyncClient(timeout=30.0)
         self._base_url = user_service_url
 
     async def does_user_exist(self, user_id: UUID, token: Optional[str] = None) -> bool:

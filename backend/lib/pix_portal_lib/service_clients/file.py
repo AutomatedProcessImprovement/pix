@@ -52,7 +52,7 @@ class File:
 class FileServiceClient(SelfAuthenticatingClient):
     def __init__(self):
         super().__init__()
-        self._client = httpx.AsyncClient()
+        self._client = httpx.AsyncClient(timeout=30.0)
         self._base_url = file_service_url
         self._blobs_base_public_url = blobs_base_public_url
         self._blobs_base_internal_url = blobs_base_internal_url

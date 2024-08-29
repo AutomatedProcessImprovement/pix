@@ -1,6 +1,7 @@
 """
 Commonly used authentication service for user authentication and authorization.
 """
+
 import logging
 from pathlib import Path
 from typing import Optional
@@ -27,7 +28,7 @@ class TokenVerificationResponse(BaseModel):
 
 class AuthServiceClient:
     def __init__(self):
-        self._client = httpx.AsyncClient()
+        self._client = httpx.AsyncClient(timeout=30.0)
         self._base_url = auth_service_url
 
         if self._base_url is None:

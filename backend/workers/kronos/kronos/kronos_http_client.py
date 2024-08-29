@@ -17,7 +17,7 @@ class KronosHTTPResponse:
 
 class KronosHTTPClient:
     def __init__(self):
-        self._http_client = httpx.AsyncClient()
+        self._http_client = httpx.AsyncClient(timeout=30.0)
         self._base_url = settings.kronos_service_url.unicode_string()
 
         # NOTE: Methods below expect the base URL to end with a slash to compose other URLs correctly.

@@ -52,7 +52,7 @@ class ProcessingRequestStatus(str, Enum):
 class ProcessingRequestServiceClient(SelfAuthenticatingClient):
     def __init__(self):
         super().__init__()
-        self._client = httpx.AsyncClient()
+        self._client = httpx.AsyncClient(timeout=30.0)
         self._base_url = processing_request_service_url
         if self._base_url is None:
             raise ValueError("PROCESSING_REQUEST_SERVICE_URL environment variable is not set")
