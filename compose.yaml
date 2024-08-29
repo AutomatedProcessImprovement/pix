@@ -22,6 +22,17 @@ services:
     networks:
       - backend
     restart: on-failure
+  kronos-web-ui:
+    build:
+      context: frontend/kronos-web-ui
+      args:
+        - NEXT_PUBLIC_KRONOS_HTTP_URL=http://localhost:8090
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+    networks:
+      - backend
+    restart: on-failure
   api-server:
     build:
       context: backend/services/api-server
@@ -290,12 +301,61 @@ services:
     secrets:
       - mail_gmail_username
       - mail_gmail_password
+  kronos:
+    build:
+      context: backend/workers/kronos
+    env_file:
+      - backend/workers/kronos/.env
+    secrets:
+      - system_email
+      - system_password
+    environment:
+      SYSTEM_EMAIL_FILE: /run/secrets/system_email
+      SYSTEM_PASSWORD_FILE: /run/secrets/system_password
+    volumes:
+      - kronos-data:/var/tmp/kronos:rw
+    depends_on:
+      - kafka
+    networks:
+      - backend
+    restart: on-failure
+  kronos-http:
+    build:
+      context: backend/services/kronos
+    ports:
+      - 8090:8000
+    env_file:
+      - backend/services/kronos/.env
+    depends_on:
+      - kronos-db
+    networks:
+      - backend
+    restart: on-failure
+  kronos-db:
+    image: postgres
+    restart: on-failure
+    user: postgres
+    volumes:
+      - kronos-db-data:/var/lib/postgresql/data
+    env_file:
+      - backend/services/kronos/.env
+    expose:
+      - 5432
+    ports:
+      - 5437:5432
+    healthcheck:
+      test: ["CMD", "pg_isready"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - backend
   optimos:
     platform: linux/amd64
     build:
       context: backend/workers/optimos
     env_file:
-      - backend/workers/optimos/.env
+      - backend/workers/optimos/.env.example
     secrets:
       - system_password
       - system_email

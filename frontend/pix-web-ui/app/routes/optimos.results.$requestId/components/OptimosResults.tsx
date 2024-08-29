@@ -276,8 +276,8 @@ const OptimizationResults = (props: SimulationResultsProps) => {
                         optimalSolutions={lastParetoFront}
                         otherSolutions={all_but_last_pareto_front}
                         initialSolution={report.initial_solution}
-                        averageCost={final_metrics.ave_cost}
-                        averageTime={final_metrics.ave_time}
+                        averageCost={final_metrics?.ave_cost}
+                        averageTime={final_metrics?.ave_time}
                       />
                     </Grid>
                   ) : (
