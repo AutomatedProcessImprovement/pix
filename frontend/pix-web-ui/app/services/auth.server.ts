@@ -14,8 +14,13 @@ export async function getJWT(username: string, password: string): Promise<string
     },
     body: `username=${usernameEncoded}&password=${passwordEncoded}`,
   });
-  const data = await response.json();
-  return data.access_token;
+  try {
+    const data = await response.json();
+    return data.access_token;
+  } catch (e) {
+    console.warn(`Error parsing/requesting JWT: ${e} -- Data: ${await response.text()}`);
+    return;
+  }
 }
 
 export async function getUserInfo(token: string): Promise<User> {
