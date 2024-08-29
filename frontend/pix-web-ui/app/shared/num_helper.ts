@@ -44,7 +44,7 @@ export const formatHourlyRate = (num?: number) => {
   return `${formatCurrency(num)}/h`;
 };
 
-export const formatPercentage = (num?: number, decimals = 2) => {
+export const formatPercentage = (num?: number, decimals = 3) => {
   if (num === undefined) return "";
   return `${formatNumber(num * 100, decimals)}%`;
 };

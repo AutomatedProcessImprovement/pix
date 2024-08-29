@@ -96,8 +96,11 @@ const GlobalConstraints = (props: GlobalConstraintsProps) => {
                     error={error !== undefined}
                     variant="standard"
                   >
-                    <MenuItem value={"CAAR"}>First Calendar Changes then Resource Add/Remove</MenuItem>
-                    <MenuItem value={"ARCA"}>First Resource Add/Remove then Calendar Changes </MenuItem>
+                    <MenuItem value={"CA"}>CA | Calendar Only</MenuItem>
+                    <MenuItem value={"AR"}>AR | Add/Remove Only</MenuItem>
+                    <MenuItem value={"CO"}>CO | CA/AR combined </MenuItem>
+                    <MenuItem value={"CAAR"}>CAAR | First CA then AR </MenuItem>
+                    <MenuItem value={"ARCA"}>ARCA | First AR then CA </MenuItem>
                   </Select>
                 </>
               )}

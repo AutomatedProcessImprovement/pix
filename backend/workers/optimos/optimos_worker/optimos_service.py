@@ -36,6 +36,7 @@ from o2.store import Store
 from o2.models.state import State
 from o2.hill_climber import HillClimber
 from o2.models.json_solution import JSONSolutions
+from o2.models.legacy_approach import LegacyApproach
 
 
 class InputAssetMissing(Exception):
@@ -226,7 +227,7 @@ class OptimosService:
         )
         # Settings
         store.settings.optimos_legacy_mode = True
-        store.settings.optimize_calendar_first = approach != "ARCA"
+        store.settings.legacy_approach = LegacyApproach.from_abbreviation(approach)
         store.settings.max_non_improving_actions = num_instances
 
         # Create base evaluation
