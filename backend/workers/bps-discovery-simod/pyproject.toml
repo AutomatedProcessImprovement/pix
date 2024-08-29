@@ -13,7 +13,7 @@ pydantic-settings = "^2.0.3"
 requests = "^2.31.0"
 kafka-python = "^2.0.2"
 httpx = "^0.25.0"
-pix-portal-lib = { path = "lib/pix_portal_lib-0.1.58-py3-none-any.whl" }
+pix-portal-lib = { path = "lib/pix_portal_lib-0.1.59-py3-none-any.whl" }
 pyyaml = "^6.0.1"
 
 [tool.poetry.group.dev.dependencies]

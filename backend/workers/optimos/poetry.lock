@@ -996,12 +996,12 @@ files = [
 
 [[package]]
 name = "pix-portal-lib"
-version = "0.1.58"
+version = "0.1.59"
 description = ""
 optional = false
 python-versions = ">=3.9,<4.0"
 files = [
-    {file = "pix_portal_lib-0.1.58-py3-none-any.whl", hash = "sha256:04dbe57112ab400152ae796b65616cbba477771e42f7301cd44476c9be032fe6"},
+    {file = "pix_portal_lib-0.1.59-py3-none-any.whl", hash = "sha256:a3234ca70795953c939267a911dcec0b6a848a08c3018824e5804728e72a715d"},
 ]
 
 [package.dependencies]
@@ -1019,7 +1019,7 @@ requests = ">=2.31.0,<3.0.0"
 
 [package.source]
 type = "file"
-url = "lib/pix_portal_lib-0.1.58-py3-none-any.whl"
+url = "lib/pix_portal_lib-0.1.59-py3-none-any.whl"
 
 [[package]]
 name = "platformdirs"
@@ -1621,4 +1621,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10,<3.11"
-content-hash = "0b1e0be6134271ac7232784ea6ca0a353746bdfd40fee5b3985f1ec756ffbe75"
+content-hash = "0335c2a50af3f6865f5e8c36208fe459dbde7f1efe9a45a6a6429665fc9e106e"
