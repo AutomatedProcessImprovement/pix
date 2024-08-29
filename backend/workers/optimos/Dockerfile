@@ -15,8 +15,6 @@ ENV PYTHONUNBUFFERED=1
 
 WORKDIR /worker
 
-
-
 # Copy the source code into the container.
 COPY README.md .
 COPY lib/. ./lib
@@ -25,8 +23,8 @@ COPY pyproject.toml .
 COPY optimos_worker/__init__.py ./optimos_worker/__init__.py
 
 # Install the local dependencies
-RUN python3 -m pip install .
+RUN --mount=type=cache,target=/root/.cache/pip python3 -m pip install .
 COPY optimos_worker ./optimos_worker
-RUN python3 -m pip install .
+RUN --mount=type=cache,target=/root/.cache/pip python3 -m pip install .
 # Run the application.
 CMD python3 optimos_worker/main.py
