@@ -61,9 +61,9 @@ export const ResourceTableRow: FC<ResourceRowProps> = React.memo((props) => {
     always_work_masks,
   } = resource;
   const resource_calendar_entries = {
-    ...getShifts(initial_resource?.shifts[0], resource.shifts[0]),
     neverWorkTimes: never_work_masks,
     alwaysWorkTimes: always_work_masks,
+    ...getShifts(initial_resource?.shifts[0], resource.shifts[0]),
   };
 
   return (
@@ -140,7 +140,7 @@ export const ResourceTableRow: FC<ResourceRowProps> = React.memo((props) => {
                 columnIndices={{
                   unchangedShift: 0,
                   neverWorkTimes: 1,
-                  alwaysWorkTimes: 1,
+                  alwaysWorkTimes: 0,
                   onlyInOriginalShift: 2,
                   onlyInCurrent: 2,
                 }}
