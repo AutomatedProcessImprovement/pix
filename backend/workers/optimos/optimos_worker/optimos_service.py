@@ -229,6 +229,9 @@ class OptimosService:
         store.settings.optimos_legacy_mode = True
         store.settings.legacy_approach = LegacyApproach.from_abbreviation(approach)
         store.settings.max_non_improving_actions = num_instances
+        # Keep one cpu core free for other processes
+        store.settings.max_threads = min(1, (os.cpu_count() or 1) - 1)
+        store.settings.max_number_of_actions_to_select = store.settings.max_threads
 
         # Create base evaluation
         store.evaluate()

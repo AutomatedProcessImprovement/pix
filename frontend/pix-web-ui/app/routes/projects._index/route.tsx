@@ -44,6 +44,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 export default function ProjectsPage() {
   const { user, projects, flashMessage } = useLoaderData<typeof loader>();
   useFlashMessage(flashMessage);
+  if (!user) return <p>User not found, try to reload the page.</p>;
 
   return (
     <div className="flex flex-col h-screen justify-between">
