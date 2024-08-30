@@ -85,8 +85,9 @@ export function ProcessingRequestCard({ request: initialRequest }: { request: Pr
     if (!request_) return;
     try {
       await deleteProcessingRequest(request_.id, user!.token!);
-      toast.success("Request deleted");
+      toast.success("Request deleted. Refresh page to update.");
     } catch (e) {
+      console.error(e);
       toast.error("Failed to delete the request");
       return;
     }

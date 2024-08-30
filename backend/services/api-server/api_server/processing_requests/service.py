@@ -189,8 +189,8 @@ class ProcessingRequestService:
         if processing_request.status in [ProcessingRequestStatus.FINISHED, ProcessingRequestStatus.FAILED]:
             await self._processing_request_repository.delete_processing_request(processing_request_id)
 
-        if processing_request.status in [ProcessingRequestStatus.FINISHED, ProcessingRequestStatus.FAILED]:
-            raise Exception("Cannot cancel a finished or failed processing request")
+        if processing_request.status in [ProcessingRequestStatus.RUNNING, ProcessingRequestStatus.CREATED]:
+            raise Exception("Cannot cancel a running or freshly created request")
 
         if processing_request.type != ProcessingRequestType.SIMULATION_MODEL_OPTIMIZATION_OPTIMOS:
             raise Exception("Cannot cancel a processing request of this type")
