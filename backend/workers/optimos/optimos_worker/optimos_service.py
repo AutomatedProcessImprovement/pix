@@ -121,9 +121,9 @@ class OptimosService:
             await self._processing_request_service_client.update_request(
                 processing_request_id=processing_request.processing_request_id,
                 status=(
-                    ProcessingRequestStatus.CANCELLED
-                    if processing_request.should_be_cancelled
-                    else ProcessingRequestStatus.FINISHED
+                    ProcessingRequestStatus.FINISHED
+                    if not processing_request.should_be_cancelled
+                    else ProcessingRequestStatus.CANCELLED
                 ),
                 end_time=datetime.utcnow(),
             )

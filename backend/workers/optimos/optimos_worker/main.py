@@ -29,14 +29,14 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 # open_telemetry_utils.instrument_worker(service_name="optimos", httpx=True)
 
+# Initialize thread pool executor
+executor = ThreadPoolExecutor(max_workers=5)
+
+# Dictionary to store task_id and corresponding future
+running_requests = {}
+
 
 async def process_message(consumer_id, message):
-    # Initialize thread pool executor
-    executor = ThreadPoolExecutor(max_workers=5)
-
-    # Dictionary to store task_id and corresponding future
-    running_requests = {}
-
     logger.info(f"Kafka consumer {consumer_id} received a message from Kafka: {message}")
     if message.topic == settings.kafka_topic_cancellations:
         processing_request_id = message.value["processing_request_id"]
