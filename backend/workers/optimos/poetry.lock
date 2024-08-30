@@ -906,7 +906,7 @@ sympy = "^1.12.1"
 type = "git"
 url = "https://github.com/AutomatedProcessImprovement/optimos_v2.git"
 reference = "main"
-resolved_reference = "42aec0e8e6d36ea32f36e8239b56dc7ecb1c24da"
+resolved_reference = "7b70b90cd07d3d629ab6937ed8a9c6ce3a296629"
 
 [[package]]
 name = "packaging"
