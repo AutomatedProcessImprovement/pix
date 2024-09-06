@@ -51,6 +51,10 @@ export const ResourceTableRow: FC<ResourceRowProps> = React.memo((props) => {
   const {
     modifiers: { deleted, added, tasksModified, shiftsModified },
 
+    assignedTasks,
+    removedTasks,
+    addedTasks,
+
     neverWorkBitmask,
     alwaysWorkBitmask,
   } = resource;
@@ -59,10 +63,6 @@ export const ResourceTableRow: FC<ResourceRowProps> = React.memo((props) => {
     alwaysWorkTimes: alwaysWorkBitmask,
     ...getShifts(resource.originalTimetableBitmask, resource.timetableBitmask),
   };
-
-  const old_tasks: any[] = [];
-  const new_tasks: any[] = [];
-  const removed_tasks: any[] = [];
 
   return (
     <React.Fragment>
@@ -97,17 +97,19 @@ export const ResourceTableRow: FC<ResourceRowProps> = React.memo((props) => {
                 Assigned Tasks
               </Typography>
               <Grid container spacing={1}>
-                {old_tasks.map((name) => (
-                  <Grid item key={name}>
-                    <Chip label={name} variant="outlined" style={{ color: "grey" }} />
-                  </Grid>
-                ))}
-                {new_tasks.map((name) => (
+                {assignedTasks
+                  .filter((name) => !addedTasks?.includes(name))
+                  .map((name) => (
+                    <Grid item key={name}>
+                      <Chip label={name} variant="outlined" style={{ color: "grey" }} />
+                    </Grid>
+                  ))}
+                {addedTasks.map((name) => (
                   <Grid item key={name}>
                     <Chip label={name} variant="outlined" color="success" />
                   </Grid>
                 ))}
-                {removed_tasks?.map((name) => (
+                {removedTasks?.map((name) => (
                   <Grid item key={name}>
                     <Chip label={name} variant="outlined" color="error" />
                   </Grid>

@@ -176,7 +176,11 @@ export interface JSONResourceInfo {
   workHoursPerWeek: number;
   neverWorkBitmask: ConstraintWorkMask;
   alwaysWorkBitmask: ConstraintWorkMask;
+
   assignedTasks: string[];
+  addedTasks: string[];
+  removedTasks: string[];
+
   modifiers: JSONResourceModifiers;
 }
 
