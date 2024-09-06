@@ -74,10 +74,13 @@ export const ResourceTableRow: FC<ResourceRowProps> = React.memo((props) => {
         </TableCell>
         <TableCell>
           {deleted && <Chip label="Unused" color="error" variant="outlined" />}
-          {added && <Chip label="New" color="success" variant="outlined" />}
           {added && <Chip icon={<ContentCopyIcon />} label="New" color="success" variant="outlined" />}
-          {tasksModified && <Chip icon={<FiberNewIcon />} label="Tasks" color="warning" variant="outlined" />}
-          {shiftsModified && <Chip icon={<FiberNewIcon />} label="Shifts" color="warning" variant="outlined" />}
+          {!added && !deleted && tasksModified && (
+            <Chip icon={<FiberNewIcon />} label="Tasks" color="warning" variant="outlined" />
+          )}
+          {!added && !deleted && shiftsModified && (
+            <Chip icon={<FiberNewIcon />} label="Shifts" color="warning" variant="outlined" />
+          )}
           {!deleted && !added && !tasksModified && !shiftsModified && (
             <Chip label="Required" color="default" variant="outlined" />
           )}

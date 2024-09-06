@@ -22,6 +22,7 @@ import { UserContext } from "~/routes/contexts";
 import { cancelProcessingRequest, type ProcessingRequest } from "~/services/processing_requests";
 import JSZip from "jszip";
 import toast from "react-hot-toast";
+import { SolutionChart } from "./SolutionChart";
 
 interface SimulationResultsProps {
   report: JSONReport;
@@ -217,13 +218,12 @@ const OptimizationResults = (props: SimulationResultsProps) => {
                         <Typography align={"left"}> {formatPercentage(1 / final_metrics?.time_metric)}</Typography>
                       </Grid> */}
 
-                      {/* <SolutionChart
-                        optimalSolutions={lastParetoFront}
-                        otherSolutions={all_but_last_pareto_front}
-                        initialSolution={report.initial_solution}
+                      <SolutionChart
+                        optimalSolutions={lastParetoFront.solutions}
+                        otherSolutions={all_but_last_pareto_front.flatMap((front) => front.solutions)}
                         averageCost={final_metrics?.ave_cost}
                         averageTime={final_metrics?.ave_time}
-                      /> */}
+                      />
                     </Grid>
                   ) : (
                     <Grid container p={10}>
@@ -279,7 +279,7 @@ const OptimizationResults = (props: SimulationResultsProps) => {
                           key={`non-optimal-solution-chunk-${index}`}
                           slotProps={{ transition: { unmountOnExit: true } }}
                         >
-                          <AccordionSummary>Solution {index + 1}</AccordionSummary>
+                          <AccordionSummary>Solution-Group {index + 1}</AccordionSummary>
                           <AccordionDetails>
                             <Grid container>
                               {front.solutions.map((solution, index) => (

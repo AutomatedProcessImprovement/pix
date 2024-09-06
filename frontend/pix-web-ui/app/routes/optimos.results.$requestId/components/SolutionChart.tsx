@@ -1,15 +1,16 @@
-import React, { FC } from "react";
+import type { FC } from "react";
+import React, { useContext } from "react";
 import * as Highcharts from "highcharts";
 import { HighchartsReact } from "highcharts-react-official";
-import type { Solution } from "~/shared/optimos_json_type";
 import { Grid } from "@mui/material";
 import { formatCurrency, formatHours, formatSeconds } from "~/shared/num_helper";
 import { useNavigate } from "@remix-run/react";
+import { InitialSolutionContext } from "./InitialSolutionContext";
+import type { JSONSolution } from "~/shared/optimos_json_type";
 
 interface SolutionChartProps {
-  optimalSolutions: Solution[];
-  otherSolutions: Solution[];
-  initialSolution?: Solution;
+  optimalSolutions: JSONSolution[];
+  otherSolutions: JSONSolution[];
   averageCost: number;
   averageTime: number;
 }
@@ -17,10 +18,10 @@ interface SolutionChartProps {
 export const SolutionChart: FC<SolutionChartProps> = ({
   optimalSolutions,
   otherSolutions,
-  initialSolution,
   averageCost,
   averageTime,
 }) => {
+  const initialSolution = useContext(InitialSolutionContext);
   const navigate = useNavigate();
   const options: Highcharts.Options = {
     chart: {
@@ -80,10 +81,10 @@ export const SolutionChart: FC<SolutionChartProps> = ({
       {
         name: "Other Solutions",
         data: otherSolutions.map((solution, index) => ({
-          x: solution.solution_info.mean_process_cycle_time,
-          y: solution.solution_info.total_pool_cost,
+          x: solution.globalInfo.averageTime,
+          y: solution.globalInfo.averageCost,
           id: `execution_${optimalSolutions.length + index}`,
-          name: `Solution #${solution.iteration}`,
+          name: `Solution #${solution.solutionNo}`,
         })),
         color: "gray",
         type: "scatter",
@@ -92,10 +93,10 @@ export const SolutionChart: FC<SolutionChartProps> = ({
         name: "Initial Solution",
         data: [
           {
-            x: initialSolution?.solution_info.mean_process_cycle_time,
-            y: initialSolution?.solution_info.total_pool_cost,
+            x: initialSolution?.globalInfo.averageTime,
+            y: initialSolution?.globalInfo.averageCost,
             id: `execution_${0}`,
-            name: `${initialSolution?.name.replaceAll("_", " ")} #${initialSolution?.iteration}`,
+            name: `Solution #${initialSolution?.solutionNo}`,
           },
         ],
         color: "red",
@@ -104,10 +105,10 @@ export const SolutionChart: FC<SolutionChartProps> = ({
       {
         name: "Optimal Solution",
         data: optimalSolutions.map((solution, index) => ({
-          x: solution.solution_info.mean_process_cycle_time,
-          y: solution.solution_info.total_pool_cost,
+          x: solution.globalInfo.averageTime,
+          y: solution.globalInfo.averageCost,
           id: `execution_${index}`,
-          name: `Solution #${solution.iteration}`,
+          name: `Solution #${solution.solutionNo}`,
         })),
         type: "scatter",
       },
