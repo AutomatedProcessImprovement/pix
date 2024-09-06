@@ -35,7 +35,7 @@ from o2.models.timetable import TimetableType
 from o2.store import Store
 from o2.models.state import State
 from o2.hill_climber import HillClimber
-from o2.models.json_solution import JSONSolutions
+from o2.models.json_report import JSONReport
 from o2.models.legacy_approach import LegacyApproach
 
 
@@ -355,7 +355,7 @@ class OptimosService:
         stats_file: tempfile._TemporaryFileWrapper,
         last_iteration=False,
     ):
-        json_solutions = JSONSolutions.from_store(store, last_iteration=last_iteration)
+        json_solutions = JSONReport.from_store(store, is_final=last_iteration)
         jsonContent = json_solutions.to_json()
 
         stats_file.truncate(0)

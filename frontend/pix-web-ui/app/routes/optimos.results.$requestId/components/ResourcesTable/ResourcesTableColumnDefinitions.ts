@@ -7,23 +7,23 @@ import {
   formatPercentage,
   formatMilliseconds,
 } from "~/shared/num_helper";
-import type { EnhancedResource } from "~/shared/optimos_json_type";
+import type { JSONResourceInfo } from "~/shared/optimos_json_type";
 
 export const COLUMN_DEFINITIONS: {
-  id: keyof Omit<EnhancedResource, "initial_resource">;
+  id: keyof JSONResourceInfo;
   label: string;
   formatFn: (x: any) => ReactNode;
   lowerIsBetter?: boolean;
   minWidth?: string | number;
 }[] = [
   { id: "name", label: "Name", formatFn: (x) => x, minWidth: "10em" },
-  { id: "total_worktime", label: "Worktime", formatFn: formatSeconds, lowerIsBetter: false, minWidth: "10em" },
-  { id: "available_time", label: "Available Time", formatFn: formatSeconds, lowerIsBetter: true },
-  { id: "cost_per_hour", label: "Hourly Rate", formatFn: formatHourlyRate, lowerIsBetter: true },
-  { id: "total_cost", label: "Cost/week", formatFn: formatCurrency, lowerIsBetter: true },
+  { id: "workedTime", label: "Worktime", formatFn: formatSeconds, lowerIsBetter: false, minWidth: "10em" },
+  { id: "availableTime", label: "Available Time", formatFn: formatSeconds, lowerIsBetter: true },
+  { id: "hourlyRate", label: "Hourly Rate", formatFn: formatHourlyRate, lowerIsBetter: true },
+  { id: "totalCost", label: "Cost/week", formatFn: formatCurrency, lowerIsBetter: true },
   { id: "utilization", label: "Utilization", formatFn: formatPercentage, lowerIsBetter: false },
-  { id: "is_human", label: "Type", formatFn: (x) => (x ? "Human" : "Machine") },
-  { id: "max_weekly_cap", label: "Max h/week", formatFn: formatHours, lowerIsBetter: false },
-  { id: "max_daily_cap", label: "Max h/day", formatFn: formatHours, lowerIsBetter: false },
-  { id: "max_consecutive_cap", label: "Max Hours consecutively", formatFn: formatHours, lowerIsBetter: false },
+  { id: "isHuman", label: "Type", formatFn: (x) => (x ? "Human" : "Machine") },
+  { id: "maxWeeklyCapacity", label: "Max h/week", formatFn: formatHours, lowerIsBetter: false },
+  { id: "maxDailyCapacity", label: "Max h/day", formatFn: formatHours, lowerIsBetter: false },
+  { id: "maxConsecutiveCapacity", label: "Max Hours consecutively", formatFn: formatHours, lowerIsBetter: false },
 ];

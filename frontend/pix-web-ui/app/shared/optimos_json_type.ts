@@ -1,92 +1,6 @@
-export interface ScenarioProperties {
-  scenario_name: string;
-  num_instances: number;
-  algorithm: "HC-FLEX" | "HC-STRICT" | "TS" | "ALL";
-  approach: "CA" | "AR" | "CO" | "CAAR" | "ARCA" | "ALL";
-}
-
-export interface FinalSolutionMetric {
-  name: string;
-  func_ev: number;
-  total_explored: number;
-  pareto_size: number;
-  in_jp: number;
-  not_in_jp: number;
-  hyperarea: number;
-  hausd_dist: number;
-  delta_sprd: number;
-  purity_rate: number;
-  ave_time: number;
-  ave_cost: number;
-  time_metric: number;
-  cost_metric: number;
-}
-
-export interface FullOutputJson {
-  name: string;
-  initial_solution: Solution;
-  final_solutions?: Solution[];
-  current_solution?: Solution;
-  final_solution_metrics: FinalSolutionMetric;
-  cons_params: ConsParams;
-}
-
-export interface Solution {
-  solution_info: SolutionInfo;
-  sim_params: SimParams;
-  name: string;
-  iteration: number;
-}
-
-export interface SolutionInfo {
-  pools_info: PoolsInfo;
-  mean_process_cycle_time: number;
-  simulation_start_date: string;
-  simulation_end_date: string;
-  simulation_time: number;
-  deviation_info: DeviationInfo;
-  pool_utilization: { [key: string]: number };
-  pool_time: { [key: string]: number };
-  pool_cost: { [key: string]: number };
-  total_pool_cost: number;
-  total_pool_time: number;
-  available_time: { [key: string]: number };
-}
-
-export interface DeviationInfo {
-  cycle_time_deviation: number;
-  execution_duration_deviation: number;
-  dev_type: number;
-}
-
-export interface PoolsInfo {
-  pools: { [key: string]: Resource };
-  task_pools: { [key: string]: ResourceListItem[] };
-  task_allocations: { [key: string]: string[] };
-  id: string;
-}
-
-export interface Resource {
-  id: string;
-  name: string;
-  time_var: number;
-  total_amount: number;
-  cost_per_hour: number;
-  custom_id: string;
-  max_weekly_cap: number;
-  max_daily_cap: number;
-  max_consecutive_cap: number;
-  max_shifts_day: number;
-  max_shifts_week: number;
-  is_human: boolean;
-  daily_start_times: DailyStartTimes;
-  never_work_masks: ConstraintWorkMask;
-  always_work_masks: ConstraintWorkMask;
-  day_free_cap: ConstraintWorkMask;
-  remaining_shifts: ConstraintWorkMask;
-  shifts: Shift[];
-  assigned_tasks: string[];
-}
+/*
+ * Constraints & Simulation Parameters
+ */
 
 export interface ConstraintWorkMask {
   monday: number;
@@ -216,24 +130,74 @@ export interface GlobalConstraints {
   is_human: boolean;
 }
 
-// --------------------------------------------------------
-// Additional combined Types
-// --------------------------------------------------------
+/*
+Result Types 
+*/
 
-export type ResourceStats = {
-  total_worktime: number;
-  total_cost: number;
+export interface JSONReport {
+  name: string;
+  approach: string;
+
+  constraints: ConsParams;
+  bpmnDefinition: string;
+  baseSolution: JSONSolution;
+  paretoFronts: JSONParetoFront[];
+
+  is_final: boolean;
+}
+
+export interface JSONParetoFront {
+  solutions: JSONSolution[];
+}
+
+export interface JSONResourceModifiers {
+  deleted?: boolean;
+  added?: boolean;
+  shiftsModified?: boolean;
+  tasksModified?: boolean;
+}
+
+export interface JSONResourceInfo {
+  id: string;
+  name: string;
+
+  workedTime: number;
+  availableTime: number;
   utilization: number;
-  available_time: number;
-  tasks: string[];
-  is_duplicate: boolean;
-  is_deleted: boolean;
-  are_tasks_different: boolean;
-  are_shifts_different: boolean;
-  initial_resource?: EnhancedResource;
-  new_tasks: string[];
-  old_tasks: string[];
-  removed_tasks: string[];
-};
+  costPerWeek: number;
+  totalCost: number;
+  hourlyRate: number;
+  isHuman: boolean;
+  maxWeeklyCapacity: number;
+  maxDailyCapacity: number;
+  maxConsecutiveCapacity: number;
+  timetableBitmask: ConstraintWorkMask;
+  originalTimetableBitmask: ConstraintWorkMask;
+  workHoursPerWeek: number;
+  neverWorkBitmask: ConstraintWorkMask;
+  alwaysWorkBitmask: ConstraintWorkMask;
+  assignedTasks: string[];
+  modifiers: JSONResourceModifiers;
+}
 
-export type EnhancedResource = Resource & ResourceStats;
+export interface JSONGlobalInfo {
+  averageCost: number;
+  averageTime: number;
+  averageResourceUtilization: number;
+  totalCost: number;
+}
+
+export interface BaseAction {
+  type: string;
+  params: Record<string, any>;
+}
+
+export interface JSONSolution {
+  isBaseSolution: boolean;
+  solutionNo: number;
+  globalInfo: JSONGlobalInfo;
+  resourceInfo: Record<string, JSONResourceInfo>;
+  deletedResourcesInfo: JSONResourceInfo[];
+  timetable: SimParams;
+  actions: BaseAction[];
+}

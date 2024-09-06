@@ -3,7 +3,6 @@ import {
   Grid,
   Paper,
   Typography,
-  Box,
   ButtonGroup,
   CircularProgress,
   Accordion,
@@ -11,63 +10,29 @@ import {
   AccordionSummary,
 } from "@mui/material";
 import { useCallback, useEffect, useRef, useState } from "react";
-import YAML, { isMap } from "yaml";
 import * as React from "react";
 import "moment-duration-format";
-import type { FullOutputJson, ScenarioProperties, Solution } from "~/shared/optimos_json_type";
-import { formatCurrency, formatPercentage, formatSeconds } from "~/shared/num_helper";
+import type { JSONReport } from "~/shared/optimos_json_type";
 import { CloudDownload as CloudDownloadIcon, Cancel as CancelIcon } from "@mui/icons-material";
-import { WeekView } from "~/components/optimos/WeekView";
 import { OptimosSolution } from "./OptimosSolution";
 import { InitialSolutionContext } from "./InitialSolutionContext";
 import { useAutoRefreshRequest } from "~/routes/projects.$projectId.$processingType/hooks/useAutoRefreshRequest";
 import { FileType, getFile, getFileContent } from "~/services/files";
 import { UserContext } from "~/routes/contexts";
 import { cancelProcessingRequest, type ProcessingRequest } from "~/services/processing_requests";
-import { SolutionChart } from "./SolutionChart";
-import { useFileFromAsset } from "~/routes/projects.$projectId.$processingType/components/optimos/hooks/useFetchedAsset";
-import { AssetType, getAsset } from "~/services/assets";
-import { addToFront, FRONT_STATUS, isMadDominated, isNonMadDominated } from "~/shared/pareto_helper";
 import JSZip from "jszip";
 import toast from "react-hot-toast";
 
 interface SimulationResultsProps {
-  report: FullOutputJson;
+  report: JSONReport;
   processingRequest: ProcessingRequest;
 }
 
 const OptimizationResults = (props: SimulationResultsProps) => {
   const user = React.useContext(UserContext);
   const { report: reportJson, processingRequest: initialRequest } = props;
-  const [report, setReport] = useState<FullOutputJson | null>(reportJson);
+  const [report, setReport] = useState<JSONReport | null>(reportJson);
 
-  const [scenarioName, setScenarioName] = useState("");
-  const [algorithm, setAlgorithm] = useState("");
-
-  useEffect(
-    () =>
-      void (async () => {
-        if (!user?.token) return;
-
-        const assets = await Promise.all(initialRequest.input_assets_ids.map((i) => getAsset(i, user!.token!, false)));
-        const configAsset = assets.find((a) => a.type === AssetType.OPTIMOS_CONFIGURATION);
-        const configFileId = configAsset?.files?.find((file) => file.type === FileType.CONFIGURATION_OPTIMOS_YAML)?.id;
-        if (!configFileId) return;
-        const fileContent = await getFileContent(configFileId, user?.token);
-
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const content = e.target?.result;
-          if (content) {
-            const config = YAML.parse(content as string) as ScenarioProperties;
-            setScenarioName(config.scenario_name);
-            setAlgorithm(config.algorithm);
-          }
-        };
-        reader.readAsText(fileContent);
-      })(),
-    [initialRequest, user, user?.token]
-  );
   const request = useAutoRefreshRequest(initialRequest);
   var oldFileId = useRef<string | null>(null);
 
@@ -132,17 +97,7 @@ const OptimizationResults = (props: SimulationResultsProps) => {
     }
   }, [request, user]);
 
-  const lastParetoFront = React.useMemo(() => {
-    const isMad = false; //algorithm === "HC-FLEX";
-    if (!report || (!report?.final_solutions && !report.current_solution) || !algorithm) return [];
-    if (!report?.final_solutions && report.current_solution) return [report!.current_solution];
-    var latestFront: Solution[] = [];
-    for (let solution of report?.final_solutions ?? []) {
-      latestFront = addToFront(solution, latestFront, isMad);
-    }
-    return latestFront;
-  }, [algorithm, report]);
-  if (!report || !algorithm)
+  if (!report)
     return (
       <Grid container justifyContent="center" alignItems="center" height="100vh" flexDirection={"column"}>
         <CircularProgress size={50} />
@@ -151,27 +106,17 @@ const OptimizationResults = (props: SimulationResultsProps) => {
       </Grid>
     );
 
-  const all_but_last_pareto_front =
-    report?.final_solutions?.filter((sol) => sol.iteration !== 0 && !lastParetoFront.includes(sol)) ?? [];
-  const all_but_last_pareto_front_in_chunks_of_25 = all_but_last_pareto_front.reduce(
-    (acc, solution) => {
-      const current_chunk = acc[acc.length - 1];
-      if (current_chunk.length < 25) {
-        return [...acc.slice(0, -1), [...current_chunk, solution]];
-      }
-      return [...acc, [solution]];
-    },
-    [[]] as Solution[][]
-  );
-
-  const final_metrics = report.final_solution_metrics;
-  const initial_solution = report.initial_solution;
-  const constraints = report.cons_params;
-
-  console.log(report);
+  const lastParetoFront = report.paretoFronts[report.paretoFronts.length - 1];
+  const all_but_last_pareto_front = report.paretoFronts.slice(0, -1);
+  const final_metrics = {
+    ave_cost: 0,
+    ave_time: 0,
+    cost_metric: 0,
+    time_metric: 0,
+  };
 
   return (
-    <InitialSolutionContext.Provider value={initial_solution}>
+    <InitialSolutionContext.Provider value={report.baseSolution}>
       <div style={{ height: "50px" }} />
 
       <Grid
@@ -192,12 +137,12 @@ const OptimizationResults = (props: SimulationResultsProps) => {
                 <Grid container>
                   <Grid item xs={8}>
                     <Typography variant="h5" align="left">
-                      {scenarioName}
+                      {report.name}
                     </Typography>
                   </Grid>
                   <Grid item xs={4} justifyContent="flexEnd" textAlign={"right"}>
                     <ButtonGroup>
-                      {!report.final_solutions && !!report.current_solution && (
+                      {!report.is_final && (
                         <Button
                           type="button"
                           variant="outlined"
@@ -228,7 +173,7 @@ const OptimizationResults = (props: SimulationResultsProps) => {
                       Download json
                     </a>
                   </Grid>
-                  {!report.current_solution ? (
+                  {report.is_final ? (
                     <Grid container>
                       <Grid item xs={5}>
                         <Typography
@@ -265,20 +210,20 @@ const OptimizationResults = (props: SimulationResultsProps) => {
                           Time compared to original
                         </Typography>
                       </Grid>
-                      <Grid item xs={7}>
+                      {/* <Grid item xs={7}>
                         <Typography align={"left"}> {formatCurrency(final_metrics?.ave_cost)}</Typography>
                         <Typography align={"left"}> {formatSeconds(final_metrics?.ave_time)}</Typography>
                         <Typography align={"left"}> {formatPercentage(1 / final_metrics?.cost_metric)}</Typography>
                         <Typography align={"left"}> {formatPercentage(1 / final_metrics?.time_metric)}</Typography>
-                      </Grid>
+                      </Grid> */}
 
-                      <SolutionChart
+                      {/* <SolutionChart
                         optimalSolutions={lastParetoFront}
                         otherSolutions={all_but_last_pareto_front}
                         initialSolution={report.initial_solution}
                         averageCost={final_metrics?.ave_cost}
                         averageTime={final_metrics?.ave_time}
-                      />
+                      /> */}
                     </Grid>
                   ) : (
                     <Grid container p={10}>
@@ -299,14 +244,13 @@ const OptimizationResults = (props: SimulationResultsProps) => {
                 </Grid>
               </Paper>
               <Grid container>
-                {lastParetoFront.map((solution, index) => (
+                {lastParetoFront.solutions.map((solution, index) => (
                   <Grid item xs={12} key={`grid-${index}`} id={"solution_" + index}>
                     <OptimosSolution
                       key={index}
                       solution={solution}
                       finalMetrics={final_metrics}
-                      initialSolution={initial_solution}
-                      constraints={constraints}
+                      constraints={report.constraints}
                     ></OptimosSolution>
                   </Grid>
                 ))}
@@ -324,30 +268,27 @@ const OptimizationResults = (props: SimulationResultsProps) => {
                         <AccordionSummary>Initial Solution</AccordionSummary>
                         <AccordionDetails>
                           <OptimosSolution
-                            initialSolution={initial_solution}
-                            solution={initial_solution}
-                            constraints={constraints}
+                            solution={report.baseSolution}
+                            constraints={report.constraints}
                           ></OptimosSolution>
                         </AccordionDetails>
                       </Accordion>
 
-                      {all_but_last_pareto_front_in_chunks_of_25.map((chunk, index) => (
+                      {all_but_last_pareto_front.map((front, index) => (
                         <Accordion
                           key={`non-optimal-solution-chunk-${index}`}
                           slotProps={{ transition: { unmountOnExit: true } }}
                         >
-                          <AccordionSummary>
-                            Solutions {index * 50 + 1} - {index * 50 + chunk.length}
-                          </AccordionSummary>
+                          <AccordionSummary>Solution {index + 1}</AccordionSummary>
                           <AccordionDetails>
                             <Grid container>
-                              {chunk.map((solution, index) => (
+                              {front.solutions.map((solution, index) => (
                                 <Grid item xs={12} key={`grid-${index}`} id={"solution_" + index}>
                                   <OptimosSolution
                                     key={index}
                                     solution={solution}
                                     finalMetrics={final_metrics}
-                                    initialSolution={initial_solution}
+                                    constraints={report.constraints}
                                   ></OptimosSolution>
                                 </Grid>
                               ))}

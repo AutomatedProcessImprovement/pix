@@ -2,7 +2,7 @@ import { TableRow, TableCell, IconButton, Chip, Collapse, Box, Typography, Grid 
 import type { FC } from "react";
 import React, { useState } from "react";
 import { WeekView } from "~/components/optimos/WeekView";
-import type { EnhancedResource, Shift, ConstraintWorkMask } from "~/shared/optimos_json_type";
+import type { Shift, ConstraintWorkMask, JSONResourceInfo } from "~/shared/optimos_json_type";
 import {
   KeyboardArrowDown as KeyboardArrowDownIcon,
   KeyboardArrowUp as KeyboardArrowUpIcon,
@@ -13,7 +13,7 @@ import { COLUMN_DEFINITIONS } from "./ResourcesTableColumnDefinitions";
 import { ResourcesTableCell } from "./ResourcesTableCell";
 
 type ResourceRowProps = {
-  resource: EnhancedResource;
+  resource: JSONResourceInfo;
 };
 
 const getShifts = (originalShift?: Shift, currentShift?: Shift) => {
@@ -49,22 +49,20 @@ export const ResourceTableRow: FC<ResourceRowProps> = React.memo((props) => {
   const [open, setOpen] = useState(false);
 
   const {
-    is_deleted,
-    is_duplicate,
-    are_tasks_different,
-    are_shifts_different,
-    initial_resource,
-    old_tasks,
-    new_tasks,
-    removed_tasks,
-    never_work_masks,
-    always_work_masks,
+    modifiers: { deleted, added, tasksModified, shiftsModified },
+
+    neverWorkBitmask,
+    alwaysWorkBitmask,
   } = resource;
   const resource_calendar_entries = {
-    neverWorkTimes: never_work_masks,
-    alwaysWorkTimes: always_work_masks,
-    ...getShifts(initial_resource?.shifts[0], resource.shifts[0]),
+    neverWorkTimes: neverWorkBitmask,
+    alwaysWorkTimes: alwaysWorkBitmask,
+    ...getShifts(resource.originalTimetableBitmask, resource.timetableBitmask),
   };
+
+  const old_tasks: any[] = [];
+  const new_tasks: any[] = [];
+  const removed_tasks: any[] = [];
 
   return (
     <React.Fragment>
@@ -75,12 +73,12 @@ export const ResourceTableRow: FC<ResourceRowProps> = React.memo((props) => {
           </IconButton>
         </TableCell>
         <TableCell>
-          {is_deleted && <Chip label="Unused" color="error" variant="outlined" />}
-          {!initial_resource && <Chip label="New" color="success" variant="outlined" />}
-          {is_duplicate && <Chip icon={<ContentCopyIcon />} label="New" color="success" variant="outlined" />}
-          {are_tasks_different && <Chip icon={<FiberNewIcon />} label="Tasks" color="warning" variant="outlined" />}
-          {are_shifts_different && <Chip icon={<FiberNewIcon />} label="Shifts" color="warning" variant="outlined" />}
-          {!is_deleted && !is_duplicate && !are_tasks_different && !are_shifts_different && (
+          {deleted && <Chip label="Unused" color="error" variant="outlined" />}
+          {added && <Chip label="New" color="success" variant="outlined" />}
+          {added && <Chip icon={<ContentCopyIcon />} label="New" color="success" variant="outlined" />}
+          {tasksModified && <Chip icon={<FiberNewIcon />} label="Tasks" color="warning" variant="outlined" />}
+          {shiftsModified && <Chip icon={<FiberNewIcon />} label="Shifts" color="warning" variant="outlined" />}
+          {!deleted && !added && !tasksModified && !shiftsModified && (
             <Chip label="Required" color="default" variant="outlined" />
           )}
         </TableCell>
