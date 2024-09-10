@@ -17,6 +17,8 @@ import { CloudDownload as CloudDownloadIcon, ExpandMore as ExpandMoreIcon } from
 import { ResourcesTable } from "./ResourcesTable/ResourcesTable";
 import { DiffInfo } from "./ResourcesTable/ResourcesTableCell";
 import { InitialSolutionContext } from "./InitialSolutionContext";
+import { BatchingOverview } from "./BatchingOverview";
+import { ModificationOverview } from "./ModificationOverview";
 
 interface OptimosSolutionProps {
   solution: JSONSolution;
@@ -27,8 +29,7 @@ interface OptimosSolutionProps {
 export const OptimosSolution: FC<OptimosSolutionProps> = memo(({ finalMetrics, solution, constraints }) => {
   const initialSolution = useContext(InitialSolutionContext);
 
-  const resources = Object.values(solution.resourceInfo);
-  const deletedResources = Object.values(solution.deletedResourcesInfo);
+  const [expanded, setExpanded] = useState<string | false>("overview");
 
   const link2DownloadRef = useRef<HTMLAnchorElement>(null);
   const link3DownloadRef = useRef<HTMLAnchorElement>(null);
@@ -73,6 +74,10 @@ export const OptimosSolution: FC<OptimosSolutionProps> = memo(({ finalMetrics, s
       URL.revokeObjectURL(fileDownloadConsParams);
     }
   }, [fileDownloadConsParams]);
+
+  const handleChange = (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
+    setExpanded(isExpanded ? panel : false);
+  };
 
   return (
     <Paper elevation={5} sx={{ m: 3, p: 3, minHeight: "10vw" }}>
@@ -130,6 +135,8 @@ export const OptimosSolution: FC<OptimosSolutionProps> = memo(({ finalMetrics, s
         sx={{
           paddingTop: 1,
         }}
+        expanded={expanded === "overview"}
+        onChange={handleChange("overview")}
       >
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Typography variant="h6" align="left">
@@ -145,7 +152,7 @@ export const OptimosSolution: FC<OptimosSolutionProps> = memo(({ finalMetrics, s
                 }}
                 align={"left"}
               >
-                Mean cost
+                Mean cost (per case)
               </Typography>
               <Typography
                 sx={{
@@ -153,7 +160,7 @@ export const OptimosSolution: FC<OptimosSolutionProps> = memo(({ finalMetrics, s
                 }}
                 align={"left"}
               >
-                Mean time
+                Mean time (per case)
               </Typography>
               <Typography
                 sx={{
@@ -161,7 +168,15 @@ export const OptimosSolution: FC<OptimosSolutionProps> = memo(({ finalMetrics, s
                 }}
                 align={"left"}
               >
-                Avg. Resource Utilization
+                Mean waiting time (per case)
+              </Typography>
+              <Typography
+                sx={{
+                  fontWeight: "bold",
+                }}
+                align={"left"}
+              >
+                Mean resource utilization
               </Typography>
             </Grid>
             <Grid item xs={7}>
@@ -196,6 +211,18 @@ export const OptimosSolution: FC<OptimosSolutionProps> = memo(({ finalMetrics, s
                 ></DiffInfo>
               </Typography>
               <Typography align={"left"}>
+                {formatSeconds(solution.globalInfo.averageWaitingTime)}{" "}
+                <DiffInfo
+                  a={initialSolution?.globalInfo.averageWaitingTime}
+                  b={solution.globalInfo.averageWaitingTime}
+                  formatFn={formatSeconds}
+                  lowerIsBetter={true}
+                  suffix="initial solution"
+                  onlyShowDiff
+                  margin={0.0}
+                ></DiffInfo>
+              </Typography>
+              <Typography align={"left"}>
                 {formatPercentage(solution.globalInfo.averageResourceUtilization)}{" "}
                 <DiffInfo
                   a={initialSolution?.globalInfo.averageResourceUtilization}
@@ -211,7 +238,7 @@ export const OptimosSolution: FC<OptimosSolutionProps> = memo(({ finalMetrics, s
           </Grid>
         </AccordionDetails>
       </Accordion>
-      <Accordion>
+      <Accordion expanded={expanded === "resources"} onChange={handleChange("resources")}>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Typography variant="h6" align="left">
             Resources
@@ -220,6 +247,28 @@ export const OptimosSolution: FC<OptimosSolutionProps> = memo(({ finalMetrics, s
 
         <AccordionDetails>
           <ResourcesTable solution={solution} />
+        </AccordionDetails>
+      </Accordion>
+      <Accordion expanded={expanded === "batching"} onChange={handleChange("batching")}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="h6" align="left">
+            Batching
+          </Typography>
+        </AccordionSummary>
+
+        <AccordionDetails>
+          <BatchingOverview solution={solution} />
+        </AccordionDetails>
+      </Accordion>
+      <Accordion expanded={expanded === "actions"} onChange={handleChange("actions")}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="h6" align="left">
+            All Modifications
+          </Typography>
+        </AccordionSummary>
+
+        <AccordionDetails>
+          <ModificationOverview solution={solution} />
         </AccordionDetails>
       </Accordion>
     </Paper>
