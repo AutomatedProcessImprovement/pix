@@ -181,6 +181,8 @@ export interface JSONResourceInfo {
   addedTasks: string[];
   removedTasks: string[];
 
+  totalBatchingWaitingTime: number;
+
   modifiers: JSONResourceModifiers;
 }
 
@@ -189,6 +191,8 @@ export interface JSONGlobalInfo {
   averageTime: number;
   averageResourceUtilization: number;
   totalCost: number;
+  averageBatchingWaitingTime: number;
+  averageWaitingTime: number;
 }
 
 export interface BaseAction {
