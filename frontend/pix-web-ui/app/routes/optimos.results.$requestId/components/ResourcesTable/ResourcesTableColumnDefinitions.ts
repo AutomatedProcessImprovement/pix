@@ -22,6 +22,12 @@ export const COLUMN_DEFINITIONS: {
   { id: "hourlyRate", label: "Hourly Rate", formatFn: formatHourlyRate, lowerIsBetter: true },
   { id: "totalCost", label: "Cost/week", formatFn: formatCurrency, lowerIsBetter: true },
   { id: "utilization", label: "Utilization", formatFn: formatPercentage, lowerIsBetter: false },
+  {
+    id: "totalBatchingWaitingTime",
+    label: "Batching Waiting Time",
+    formatFn: formatSeconds,
+    lowerIsBetter: true,
+  },
   { id: "isHuman", label: "Type", formatFn: (x) => (x ? "Human" : "Machine") },
   { id: "maxWeeklyCapacity", label: "Max h/week", formatFn: formatHours, lowerIsBetter: false },
   { id: "maxDailyCapacity", label: "Max h/day", formatFn: formatHours, lowerIsBetter: false },
