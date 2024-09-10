@@ -7,11 +7,16 @@ export const formatNumber = (num: number, decimals = 2) => {
 
 export const formatSeconds = (seconds?: number, includeHours = true) => {
   if (seconds === undefined) return "";
-  const hours = Math.floor(seconds / 3600);
+
+  const days = Math.floor(seconds / (24 * 60 * 60));
+  const hours = Math.floor((seconds % (24 * 60 * 60)) / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
-  const secondsLeft = Math.round(seconds % 60);
+  const secondsLeft = Math.floor(seconds % 60);
 
   let result = "";
+  if (includeHours && days > 0) {
+    result += `${days}d `;
+  }
   if (includeHours && hours > 0) {
     result += `${hours}h `;
   }

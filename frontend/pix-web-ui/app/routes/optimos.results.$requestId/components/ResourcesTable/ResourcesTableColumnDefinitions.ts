@@ -17,10 +17,15 @@ export const COLUMN_DEFINITIONS: {
   minWidth?: string | number;
 }[] = [
   { id: "name", label: "Name", formatFn: (x) => x, minWidth: "10em" },
-  { id: "workedTime", label: "Worktime", formatFn: formatSeconds, lowerIsBetter: false, minWidth: "10em" },
-  { id: "availableTime", label: "Available Time", formatFn: formatSeconds, lowerIsBetter: true },
+  {
+    id: "workedTime",
+    label: "Worktime (by Calendar)",
+    formatFn: formatSeconds,
+    lowerIsBetter: false,
+    minWidth: "10em",
+  },
+  { id: "availableTime", label: "Actual Worktime", formatFn: formatSeconds, lowerIsBetter: true },
   { id: "hourlyRate", label: "Hourly Rate", formatFn: formatHourlyRate, lowerIsBetter: true },
-  { id: "totalCost", label: "Cost/week", formatFn: formatCurrency, lowerIsBetter: true },
   { id: "utilization", label: "Utilization", formatFn: formatPercentage, lowerIsBetter: false },
   {
     id: "totalBatchingWaitingTime",
@@ -29,6 +34,7 @@ export const COLUMN_DEFINITIONS: {
     lowerIsBetter: true,
   },
   { id: "isHuman", label: "Type", formatFn: (x) => (x ? "Human" : "Machine") },
+  { id: "costPerWeek", label: "Cost/week", formatFn: formatCurrency, lowerIsBetter: true },
   { id: "maxWeeklyCapacity", label: "Max h/week", formatFn: formatHours, lowerIsBetter: false },
   { id: "maxDailyCapacity", label: "Max h/day", formatFn: formatHours, lowerIsBetter: false },
   { id: "maxConsecutiveCapacity", label: "Max Hours consecutively", formatFn: formatHours, lowerIsBetter: false },

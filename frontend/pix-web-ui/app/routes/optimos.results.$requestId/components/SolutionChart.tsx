@@ -11,16 +11,9 @@ import type { JSONSolution } from "~/shared/optimos_json_type";
 interface SolutionChartProps {
   optimalSolutions: JSONSolution[];
   otherSolutions: JSONSolution[];
-  averageCost: number;
-  averageTime: number;
 }
 
-export const SolutionChart: FC<SolutionChartProps> = ({
-  optimalSolutions,
-  otherSolutions,
-  averageCost,
-  averageTime,
-}) => {
+export const SolutionChart: FC<SolutionChartProps> = ({ optimalSolutions, otherSolutions }) => {
   const initialSolution = useContext(InitialSolutionContext);
   const navigate = useNavigate();
   const options: Highcharts.Options = {
@@ -81,8 +74,8 @@ export const SolutionChart: FC<SolutionChartProps> = ({
       {
         name: "Other Solutions",
         data: otherSolutions.map((solution, index) => ({
-          x: solution.globalInfo.averageTime,
-          y: solution.globalInfo.averageCost,
+          x: solution.globalInfo.totalTime,
+          y: solution.globalInfo.totalCost,
           id: `execution_${optimalSolutions.length + index}`,
           name: `Solution #${solution.solutionNo}`,
         })),
@@ -93,8 +86,8 @@ export const SolutionChart: FC<SolutionChartProps> = ({
         name: "Initial Solution",
         data: [
           {
-            x: initialSolution?.globalInfo.averageTime,
-            y: initialSolution?.globalInfo.averageCost,
+            x: initialSolution?.globalInfo.totalTime,
+            y: initialSolution?.globalInfo.totalCost,
             id: `execution_${0}`,
             name: `Solution #${initialSolution?.solutionNo}`,
           },
@@ -105,8 +98,8 @@ export const SolutionChart: FC<SolutionChartProps> = ({
       {
         name: "Optimal Solution",
         data: optimalSolutions.map((solution, index) => ({
-          x: solution.globalInfo.averageTime,
-          y: solution.globalInfo.averageCost,
+          x: solution.globalInfo.totalTime,
+          y: solution.globalInfo.totalCost,
           id: `execution_${index}`,
           name: `Solution #${solution.solutionNo}`,
         })),

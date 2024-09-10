@@ -143,7 +143,7 @@ export interface JSONReport {
   baseSolution: JSONSolution;
   paretoFronts: JSONParetoFront[];
 
-  is_final: boolean;
+  isFinal: boolean;
 }
 
 export interface JSONParetoFront {
@@ -191,6 +191,7 @@ export interface JSONGlobalInfo {
   averageTime: number;
   averageResourceUtilization: number;
   totalCost: number;
+  totalTime: number;
   averageBatchingWaitingTime: number;
   averageWaitingTime: number;
 }

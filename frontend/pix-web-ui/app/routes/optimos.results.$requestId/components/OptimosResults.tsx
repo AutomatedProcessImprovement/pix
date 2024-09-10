@@ -23,6 +23,7 @@ import { cancelProcessingRequest, type ProcessingRequest } from "~/services/proc
 import JSZip from "jszip";
 import toast from "react-hot-toast";
 import { SolutionChart } from "./SolutionChart";
+import { formatCurrency, formatSeconds, formatPercentage } from "~/shared/num_helper";
 
 interface SimulationResultsProps {
   report: JSONReport;
@@ -143,7 +144,7 @@ const OptimizationResults = (props: SimulationResultsProps) => {
                   </Grid>
                   <Grid item xs={4} justifyContent="flexEnd" textAlign={"right"}>
                     <ButtonGroup>
-                      {!report.is_final && (
+                      {!report.isFinal && (
                         <Button
                           type="button"
                           variant="outlined"
@@ -174,73 +175,74 @@ const OptimizationResults = (props: SimulationResultsProps) => {
                       Download json
                     </a>
                   </Grid>
-                  {report.is_final ? (
-                    <Grid container>
-                      <Grid item xs={5}>
-                        <Typography
-                          sx={{
-                            fontWeight: "bold",
-                          }}
-                          align={"left"}
-                        >
-                          Average cost
-                        </Typography>
-                        <Typography
-                          sx={{
-                            fontWeight: "bold",
-                          }}
-                          align={"left"}
-                        >
-                          Average cycle time
-                        </Typography>
+                  <Grid container>
+                    {report.isFinal ? (
+                      <>
+                        <Grid item xs={5}>
+                          <Typography
+                            sx={{
+                              fontWeight: "bold",
+                            }}
+                            align={"left"}
+                          >
+                            Average cost
+                          </Typography>
+                          <Typography
+                            sx={{
+                              fontWeight: "bold",
+                            }}
+                            align={"left"}
+                          >
+                            Average cycle time
+                          </Typography>
 
-                        <Typography
-                          sx={{
-                            fontWeight: "bold",
-                          }}
-                          align={"left"}
-                        >
-                          Cost compared to original
-                        </Typography>
-                        <Typography
-                          sx={{
-                            fontWeight: "bold",
-                          }}
-                          align={"left"}
-                        >
-                          Time compared to original
-                        </Typography>
-                      </Grid>
-                      {/* <Grid item xs={7}>
-                        <Typography align={"left"}> {formatCurrency(final_metrics?.ave_cost)}</Typography>
-                        <Typography align={"left"}> {formatSeconds(final_metrics?.ave_time)}</Typography>
-                        <Typography align={"left"}> {formatPercentage(1 / final_metrics?.cost_metric)}</Typography>
-                        <Typography align={"left"}> {formatPercentage(1 / final_metrics?.time_metric)}</Typography>
-                      </Grid> */}
-
-                      <SolutionChart
-                        optimalSolutions={lastParetoFront.solutions}
-                        otherSolutions={all_but_last_pareto_front.flatMap((front) => front.solutions)}
-                        averageCost={final_metrics?.ave_cost}
-                        averageTime={final_metrics?.ave_time}
-                      />
-                    </Grid>
-                  ) : (
-                    <Grid container p={10}>
-                      <Grid container justifyContent="center">
-                        <Grid item>
-                          <CircularProgress size={60} />
-                        </Grid>
-                      </Grid>
-                      <Grid container justifyContent="center">
-                        <Grid item>
-                          <Typography variant="body1" align="center">
-                            The Process is still running, below you find the current iteration
+                          <Typography
+                            sx={{
+                              fontWeight: "bold",
+                            }}
+                            align={"left"}
+                          >
+                            Cost compared to original
+                          </Typography>
+                          <Typography
+                            sx={{
+                              fontWeight: "bold",
+                            }}
+                            align={"left"}
+                          >
+                            Time compared to original
                           </Typography>
                         </Grid>
-                      </Grid>
-                    </Grid>
-                  )}
+                        <Grid item xs={7}>
+                          <Typography align={"left"}> {formatCurrency(final_metrics?.ave_cost)}</Typography>
+                          <Typography align={"left"}> {formatSeconds(final_metrics?.ave_time)}</Typography>
+                          <Typography align={"left"}> {formatPercentage(1 / final_metrics?.cost_metric)}</Typography>
+                          <Typography align={"left"}> {formatPercentage(1 / final_metrics?.time_metric)}</Typography>
+                        </Grid>
+                      </>
+                    ) : (
+                      <>
+                        <Grid container justifyContent="center">
+                          <Grid item>
+                            <CircularProgress size={60} />
+                          </Grid>
+                        </Grid>
+                        <Grid container justifyContent="center" sx={{ mb: 4 }}>
+                          <Grid item>
+                            <Typography variant="body1" align="center">
+                              The Process is still running, below you find the current iteration
+                            </Typography>
+                          </Grid>
+                        </Grid>
+                      </>
+                    )}
+                    <SolutionChart
+                      optimalSolutions={lastParetoFront.solutions.filter((sol) => !sol.isBaseSolution)}
+                      otherSolutions={all_but_last_pareto_front
+                        .flatMap((front) => front.solutions)
+                        .filter((sol) => !sol.isBaseSolution)}
+                    />
+                  </Grid>
                 </Grid>
               </Paper>
               <Grid container>

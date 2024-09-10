@@ -241,6 +241,9 @@ class OptimosService:
 
         # Create base evaluation
         store.evaluate()
+        # Upload initial evaluation
+        await self.async_iteration_callback(store, output_asset_id, stats_file)
+
         hill_climber = HillClimber(store)
         generator = hill_climber.get_iteration_generator()
         logger.info("Created Store")

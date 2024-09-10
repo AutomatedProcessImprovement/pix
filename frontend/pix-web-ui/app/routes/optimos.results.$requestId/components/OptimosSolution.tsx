@@ -29,7 +29,7 @@ interface OptimosSolutionProps {
 export const OptimosSolution: FC<OptimosSolutionProps> = memo(({ finalMetrics, solution, constraints }) => {
   const initialSolution = useContext(InitialSolutionContext);
 
-  const [expanded, setExpanded] = useState<string | false>("overview");
+  const [expanded, setExpanded] = useState<string | false>(false);
 
   const link2DownloadRef = useRef<HTMLAnchorElement>(null);
   const link3DownloadRef = useRef<HTMLAnchorElement>(null);
@@ -135,8 +135,6 @@ export const OptimosSolution: FC<OptimosSolutionProps> = memo(({ finalMetrics, s
         sx={{
           paddingTop: 1,
         }}
-        expanded={expanded === "overview"}
-        onChange={handleChange("overview")}
       >
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Typography variant="h6" align="left">
@@ -160,7 +158,23 @@ export const OptimosSolution: FC<OptimosSolutionProps> = memo(({ finalMetrics, s
                 }}
                 align={"left"}
               >
+                Total cost (all cases)
+              </Typography>
+              <Typography
+                sx={{
+                  fontWeight: "bold",
+                }}
+                align={"left"}
+              >
                 Mean time (per case)
+              </Typography>
+              <Typography
+                sx={{
+                  fontWeight: "bold",
+                }}
+                align={"left"}
+              >
+                Total time (all cases)
               </Typography>
               <Typography
                 sx={{
@@ -180,6 +194,24 @@ export const OptimosSolution: FC<OptimosSolutionProps> = memo(({ finalMetrics, s
               </Typography>
             </Grid>
             <Grid item xs={7}>
+              <Typography align={"left"}>
+                {formatCurrency(solution.globalInfo.averageCost)}
+                {/* {finalMetrics &&
+                  (finalMetrics.ave_cost > info.total_pool_cost ? (
+                    <i style={{ color: "green", fontSize: "0.8em" }}> (≤ avg.)</i>
+                  ) : (
+                    <i style={{ color: "red", fontSize: "0.8em" }}> ({">"} avg.)</i>
+                  ))} */}{" "}
+                <DiffInfo
+                  a={initialSolution?.globalInfo.averageCost}
+                  b={solution.globalInfo.averageCost}
+                  formatFn={formatCurrency}
+                  lowerIsBetter={true}
+                  suffix="initial solution"
+                  onlyShowDiff
+                  margin={0.0}
+                />
+              </Typography>
               <Typography align={"left"}>
                 {formatCurrency(solution.globalInfo.totalCost)}
                 {/* {finalMetrics &&
@@ -203,6 +235,18 @@ export const OptimosSolution: FC<OptimosSolutionProps> = memo(({ finalMetrics, s
                 <DiffInfo
                   a={initialSolution?.globalInfo.averageTime}
                   b={solution.globalInfo.averageTime}
+                  formatFn={formatSeconds}
+                  lowerIsBetter={true}
+                  suffix="initial solution"
+                  onlyShowDiff
+                  margin={0.0}
+                ></DiffInfo>
+              </Typography>
+              <Typography align={"left"}>
+                {formatSeconds(solution.globalInfo.totalTime)}{" "}
+                <DiffInfo
+                  a={initialSolution?.globalInfo.totalTime}
+                  b={solution.globalInfo.totalTime}
                   formatFn={formatSeconds}
                   lowerIsBetter={true}
                   suffix="initial solution"
