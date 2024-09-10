@@ -178,7 +178,7 @@ const OptimizationResults = (props: SimulationResultsProps) => {
                   <Grid container>
                     {report.isFinal ? (
                       <>
-                        <Grid item xs={5}>
+                        {/* <Grid item xs={5}>
                           <Typography
                             sx={{
                               fontWeight: "bold",
@@ -218,7 +218,7 @@ const OptimizationResults = (props: SimulationResultsProps) => {
                           <Typography align={"left"}> {formatSeconds(final_metrics?.ave_time)}</Typography>
                           <Typography align={"left"}> {formatPercentage(1 / final_metrics?.cost_metric)}</Typography>
                           <Typography align={"left"}> {formatPercentage(1 / final_metrics?.time_metric)}</Typography>
-                        </Grid>
+                        </Grid>*/}
                       </>
                     ) : (
                       <>

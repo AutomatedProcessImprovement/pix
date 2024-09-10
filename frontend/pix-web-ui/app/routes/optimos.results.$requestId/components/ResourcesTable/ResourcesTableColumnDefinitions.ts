@@ -1,12 +1,5 @@
 import type { ReactNode } from "react";
-import {
-  formatSeconds,
-  formatHours,
-  formatHourlyRate,
-  formatCurrency,
-  formatPercentage,
-  formatMilliseconds,
-} from "~/shared/num_helper";
+import { formatSeconds, formatHours, formatHourlyRate, formatCurrency, formatPercentage } from "~/shared/num_helper";
 import type { JSONResourceInfo } from "~/shared/optimos_json_type";
 
 export const COLUMN_DEFINITIONS: {
@@ -19,14 +12,14 @@ export const COLUMN_DEFINITIONS: {
   { id: "name", label: "Name", formatFn: (x) => x, minWidth: "10em" },
   {
     id: "workedTime",
-    label: "Worktime (by Calendar)",
+    label: "Worktime (Calendar)",
     formatFn: formatSeconds,
     lowerIsBetter: false,
     minWidth: "10em",
   },
-  { id: "availableTime", label: "Actual Worktime", formatFn: formatSeconds, lowerIsBetter: true },
-  { id: "hourlyRate", label: "Hourly Rate", formatFn: formatHourlyRate, lowerIsBetter: true },
+  { id: "availableTime", label: "Worktime (Actual)", formatFn: formatSeconds, lowerIsBetter: true },
   { id: "utilization", label: "Utilization", formatFn: formatPercentage, lowerIsBetter: false },
+  { id: "hourlyRate", label: "Hourly Rate", formatFn: formatHourlyRate, lowerIsBetter: true },
   {
     id: "totalBatchingWaitingTime",
     label: "Batching Waiting Time",
